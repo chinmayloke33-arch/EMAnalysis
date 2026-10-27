@@ -117,7 +117,7 @@ st.markdown("""
         width: auto !important;
     }
     </style>
-""", unsafe_allowed_html=True)
+""", unsafe_allow_html=True)
 
 # =====================================================================
 # 📋 TOP NAVIGATION COMPONENTS MAPPING
@@ -289,4 +289,4 @@ else:
                 except Exception as ex:
                     st.error(f"Database write exception caught: {str(ex)}")
 
-    st.markdown("</div>", unsafe_allowed_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
