@@ -1,4 +1,4 @@
-```python
+
 import datetime
 import secrets
 import string
@@ -1372,4 +1372,4 @@ st.divider()
 st.caption(
     "KRCL | Insulator Assembly Master & Transaction Management System"
 )
-```
+
