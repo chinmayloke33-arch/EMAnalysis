@@ -179,9 +179,9 @@ else:
             res = supabase.table("emt_ia_maintain").select("*").eq("ia_code", search_target).order("timestamp", desc=True).limit(1).execute()
             if res.data:
                 st.success(f"Latest record entry for '{search_target}' loaded successfully!")
-                row_data = res.data[0] if isinstance(res.data, list) and len(res.data) > 0 else res.data
+                row_data = res.data if isinstance(res.data, list) and len(res.data) > 0 else res.data
                 if isinstance(row_data, list):
-                    row_data = {}
+                    row_data = row_data[0] if len(row_data) > 0 else {}
                 target_row_id = row_data.get("id")
                 default_ia = row_data.get("ia_code", search_target)
                 try:
@@ -210,37 +210,37 @@ else:
             else:
                 dropdown_list.append(default_ia)
                 select_idx = len(dropdown_list) - 1
-            ia_code = st.selectbox("", dropdown_list, index=select_idx, label_visibility="collapsed")
+            ia_code = st.selectbox("", dropdown_list, index=select_idx, label_visibility="collapsed", key="tx_ia_code_select")
             
         with row1_col2:
             st.markdown("<p class='field-label-hi'>तारीख</p><span class='field-label-en'>Inspection Date</span>", unsafe_allow_html=True)
-            date_val = st.date_input("", value=default_date, label_visibility="collapsed")
+            date_val = st.date_input("", value=default_date, label_visibility="collapsed", key="tx_date_input")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         row2_col1, row2_col2, row2_col3 = st.columns(3)
         with row2_col1:
             st.markdown("<p class='field-label-hi'>कॉन्टैक्ट वायर हाईट (मिमी)</p><span class='field-label-en'>Contact Wire Height (mm)</span>", unsafe_allow_html=True)
-            c_w_ht = st.number_input("", value=default_cw, step=1, label_visibility="collapsed")
+            c_w_ht = st.number_input("", value=default_cw, step=1, label_visibility="collapsed", key="tx_cw_input")
         with row2_col2:
             st.markdown("<p class='field-label-hi'>एन्कम्ब्रन्स (मिमी)</p><span class='field-label-en'>Encumbrance (mm)</span>", unsafe_allow_html=True)
-            encum = st.number_input("", value=default_encum, step=1, label_visibility="collapsed")
+            encum = st.number_input("", value=default_encum, step=1, label_visibility="collapsed", key="tx_encum_input")
         with row2_col3:
             st.markdown("<p class='field-label-hi'>रनर गैप (मिमी)</p><span class='field-label-en'>Runner Gap (mm)</span>", unsafe_allow_html=True)
-            run_gap = st.number_input("", value=default_gap, step=1, label_visibility="collapsed")
+            run_gap = st.number_input("", value=default_gap, step=1, label_visibility="collapsed", key="tx_rungap_input")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         row3_col1, row3_col2, row3_col3 = st.columns(3)
         with row3_col1:
             st.markdown("<p class='field-label-hi'>ऑब्जर्वेशन</p><span class='field-label-en'>Observation Details</span>", unsafe_allow_html=True)
-            observation = st.text_area("", value=default_obs, label_visibility="collapsed", height=80)
+            observation = st.text_area("", value=default_obs, label_visibility="collapsed", height=80, key="tx_obs_input")
         with row3_col2:
             st.markdown("<p class='field-label-hi'>किये गये कार्य का विवरण</p><span class='field-label-en'>Description / Work Done</span>", unsafe_allow_html=True)
-            description = st.text_area("", value=default_desc, label_visibility="collapsed", height=80)
+            description = st.text_area("", value=default_desc, label_visibility="collapsed", height=80, key="tx_desc_input")
         with row3_col3:
             st.markdown("<p class='field-label-hi'>टिपणी</p><span class='field-label-en'>Additional Remarks</span>", unsafe_allow_html=True)
-            remarks = st.text_area("", value=default_rem, label_visibility="collapsed", height=80)
+            remarks = st.text_area("", value=default_rem, label_visibility="collapsed", height=80, key="tx_remarks_input")
 
         st.markdown("<br><br>", unsafe_allow_html=True)
 
