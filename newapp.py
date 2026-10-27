@@ -1,20 +1,27 @@
 import datetime
 import streamlit as st
 from supabase import create_client, Client
+from supabase.lib.client_options import ClientOptions
 
 # =====================================================================
-# 1. SUPABASE CONNECTION PIPELINE
+# 1. FIXED SUPABASE CONNECTION PIPELINE (Bypasses 404 HTML Redirects)
 # =====================================================================
 @st.cache_resource
 def get_supabase_client() -> Client:
-    url: str = st.secrets["supabase"]["SUPABASE_URL"]
-    key: str = st.secrets["supabase"]["SUPABASE_KEY"]
-    return create_client(url, key)
+    url: str = st.secrets["supabase"]["SUPABASE_URL"].strip()
+    key: str = st.secrets["supabase"]["SUPABASE_KEY"].strip()
+    
+    # Enforces clean JSON request/response headers over HTTP pipelines
+    custom_options = ClientOptions(
+        postgrest_client_timeout=15,
+        headers={"Accept": "application/json", "Content-Type": "application/json"}
+    )
+    return create_client(url, key, options=custom_options)
 
 try:
     supabase: Client = get_supabase_client()
 except Exception as e:
-    st.error(f"Initialization Error: Secrets mapping is invalid. {str(e)}")
+    st.error(f"Configuration Critical Failure: Check your Streamlit Secrets box settings. Details: {str(e)}")
 
 # Fetch active insulator assemblies from master table safely
 @st.cache_data(ttl=5)
@@ -143,7 +150,6 @@ with nav_col4:
         st.session_state.current_view = "MODIFY"
 
 st.markdown("<br>", unsafe_allow_html=True)
-
 # =====================================================================
 # VIEW MODE: HISTORICAL DATA TABLE DISPLAY
 # =====================================================================
@@ -161,7 +167,7 @@ if st.session_state.current_view == "VIEW":
             else:
                 st.info("No logs currently recorded inside the transaction database.")
         except Exception as e:
-            st.error(f"Connection Pending: Please verify your Supabase endpoint strings inside Secrets. Details: {str(e)}")
+            st.error(f"Data Connection Error: Please verify your Supabase endpoint setup variables inside Secrets panel. Details: {str(e)}")
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =====================================================================
@@ -236,3 +242,69 @@ else:
             c_w_ht = st.number_input("", value=default_cw, step=1, label_visibility="collapsed", key="tx_cw_input")
         with row2_col2:
             st.markdown("<p class='field-label-hi'>एन्कम्ब्रन्स (मिमी)</p><span class='field-label-en'>Encumbrance (mm)</span>", unsafe_allow_html=True)
+            encum = st.number_input("", value=default_encum, step=1, label_visibility="collapsed", key="tx_encum_input")
+        with row2_col3:
+            st.markdown("<p class='field-label-hi'>रनर गैप (मिमी)</p><span class='field-label-en'>Runner Gap (mm)</span>", unsafe_allow_html=True)
+            run_gap = st.number_input("", value=default_gap, step=1, label_visibility="collapsed", key="tx_rungap_input")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        row3_col1, row3_col2, row3_col3 = st.columns(3)
+        with row3_col1:
+            st.markdown("<p class='field-label-hi'>ऑब्जर्वेशन</p><span class='field-label-en'>Observation Details</span>", unsafe_allow_html=True)
+            observation = st.text_area("", value=default_obs, label_visibility="collapsed", height=80, key="tx_obs_input")
+        with row3_col2:
+            st.markdown("<p class='field-label-hi'>किये गये कार्य का विवरण</p><span class='field-label-en'>Description / Work Done</span>", unsafe_allow_html=True)
+            description = st.text_area("", value=default_desc, label_visibility="collapsed", height=80, key="tx_desc_input")
+        with row3_col3:
+            st.markdown("<p class='field-label-hi'>टिपणी</p><span class='field-label-en'>Additional Remarks</span>", unsafe_allow_html=True)
+            remarks = st.text_area("", value=default_rem, label_visibility="collapsed", height=80, key="tx_remarks_input")
+
+        st.markdown("<br><br>", unsafe_allow_html=True)
+
+        action_col1, action_col2, action_col3 = st.columns([2.5, 2, 2.5])
+        with action_col2:
+            if st.session_state.current_view == "MODIFY":
+                st.markdown('<div class="update-btn">', unsafe_allow_html=True)
+                submit_triggered = st.form_submit_button("Update Record")
+                st.markdown('</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="save-btn">', unsafe_allow_html=True)
+                submit_triggered = st.form_submit_button("Save Record")
+                st.markdown('</div>', unsafe_allow_html=True)
+
+        if submit_triggered:
+            if ia_code == "-- असेंबली चुनें --":
+                st.error("Validation Halt: Please select a valid Insulator Assembly.")
+            else:
+                tx_payload = {
+                    "ia_code": ia_code,
+                    "date": date_val.strftime("%Y-%m-%d"),
+                    "c_w_ht": int(c_w_ht),
+                    "encum": int(encum),
+                    "run_gap": int(run_gap),
+                    "observation": observation.strip(),
+                    "description": description.strip(),
+                    "remarks": remarks.strip(),
+                    "user_id": "Omkar_Dev",
+                    "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "sup_emp_no": 204,
+                    "sup_emp_name": "Supervisor_Alpha"
+                }
+                
+                try:
+                    if st.session_state.current_view == "MODIFY":
+                        if target_row_id:
+                            tx_payload["modify_id"] = "Omkar_Dev"
+                            tx_payload["modify_rea"] = "System UI Parameter Correction"
+                            supabase.table("emt_ia_maintain").update(tx_payload).eq("id", target_row_id).execute()
+                        else:
+                            supabase.table("emt_ia_maintain").update(tx_payload).eq("ia_code", ia_code).execute()
+                        st.success("Success: Inspection record updated safely inside cloud database!")
+                    else:
+                        supabase.table("emt_ia_maintain").insert(tx_payload).execute()
+                        st.success("Success: Data saved cleanly to your Supabase cloud storage!")
+                except Exception as ex:
+                    st.error(f"Database write exception caught: {str(ex)}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
