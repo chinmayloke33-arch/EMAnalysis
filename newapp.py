@@ -1,4 +1,4 @@
-```python
+
 import datetime
 
 import streamlit as st
@@ -809,4 +809,4 @@ st.caption(
     "Inspection Record Management System | "
     "Supabase Database Integration"
 )
-```
+
