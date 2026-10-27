@@ -142,8 +142,8 @@ st.markdown("<br>", unsafe_allow_html=True)
 # =====================================================================
 if st.session_state.current_view == "VIEW":
     st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    st.markdown("<p class='form-title'>ऐतिहासिक निरीक्षण रिकॉर्ड</p>", unsafe_allowed_html=True)
-    st.markdown("<p class='form-subtitle'>Historical Inspection Ledger Records</p>", unsafe_allowed_html=True)
+    st.markdown("<p class='form-title'>ऐतिहासिक निरीक्षण रिकॉर्ड</p>", unsafe_allow_html=True)
+    st.markdown("<p class='form-subtitle'>Historical Inspection Ledger Records</p>", unsafe_allow_html=True)
     
     with st.spinner("Loading records from cloud database..."):
         records = supabase.table("emt_ia_maintain").select("*").order("timestamp", desc=True).execute()
@@ -179,9 +179,9 @@ else:
             res = supabase.table("emt_ia_maintain").select("*").eq("ia_code", search_target).order("timestamp", desc=True).limit(1).execute()
             if res.data:
                 st.success(f"Latest record entry for '{search_target}' loaded successfully!")
-                row_data = res.data if isinstance(res.data, list) and len(res.data) > 0 else res.data
+                row_data = res.data[0] if isinstance(res.data, list) and len(res.data) > 0 else res.data
                 if isinstance(row_data, list):
-                    row_data = row_data[0] if len(row_data) > 0 else {}
+                    row_data = {}
                 target_row_id = row_data.get("id")
                 default_ia = row_data.get("ia_code", search_target)
                 try:
@@ -220,13 +220,13 @@ else:
 
         row2_col1, row2_col2, row2_col3 = st.columns(3)
         with row2_col1:
-            st.markdown("<p class='field-label-hi'>कॉन्टैक्ट वायर हाईट (मिमी)</p><span class='field-label-en'>Contact Wire Height (mm)</span>", unsafe_allowed_html=True)
+            st.markdown("<p class='field-label-hi'>कॉन्टैक्ट वायर हाईट (मिमी)</p><span class='field-label-en'>Contact Wire Height (mm)</span>", unsafe_allow_html=True)
             c_w_ht = st.number_input("", value=default_cw, step=1, label_visibility="collapsed")
         with row2_col2:
-            st.markdown("<p class='field-label-hi'>एन्कम्ब्रन्स (मिमी)</p><span class='field-label-en'>Encumbrance (mm)</span>", unsafe_allowed_html=True)
+            st.markdown("<p class='field-label-hi'>एन्कम्ब्रन्स (मिमी)</p><span class='field-label-en'>Encumbrance (mm)</span>", unsafe_allow_html=True)
             encum = st.number_input("", value=default_encum, step=1, label_visibility="collapsed")
         with row2_col3:
-            st.markdown("<p class='field-label-hi'>रनर गैप (मिमी)</p><span class='field-label-en'>Runner Gap (mm)</span>", unsafe_allowed_html=True)
+            st.markdown("<p class='field-label-hi'>रनर गैप (मिमी)</p><span class='field-label-en'>Runner Gap (mm)</span>", unsafe_allow_html=True)
             run_gap = st.number_input("", value=default_gap, step=1, label_visibility="collapsed")
 
         st.markdown("<br>", unsafe_allow_html=True)
