@@ -13,12 +13,16 @@ def get_supabase_client() -> Client:
 
 supabase: Client = get_supabase_client()
 
-# Fetch active insulator assemblies from master table to fill dropdown options
-@st.cache_data(ttl=10)
+# Fetch active insulator assemblies from master table safely
+@st.cache_data(ttl=5)
 def fetch_registered_assemblies():
     try:
         res = supabase.table("emm_ins_asmbly").select("ia_code").execute()
-        return [row["ia_code"] for row in res.data] if res.data else []
+        # Parse data safely whether it returns a list or an object structure
+        data_list = res.data if hasattr(res, 'data') else res
+        if isinstance(data_list, list):
+            return [str(row["ia_code"]) for row in data_list if "ia_code" in row]
+        return []
     except Exception:
         return []
 
@@ -148,12 +152,13 @@ if st.session_state.current_view == "VIEW":
     with st.spinner("Loading records from cloud database..."):
         try:
             records = supabase.table("emt_ia_maintain").select("*").order("timestamp", desc=True).execute()
-            if records.data:
-                st.dataframe(records.data, use_container_width=True)
+            data_records = records.data if hasattr(records, 'data') else records
+            if isinstance(data_records, list) and len(data_records) > 0:
+                st.dataframe(data_records, use_container_width=True)
             else:
                 st.info("No logs currently recorded inside the transaction database.")
         except Exception as e:
-            st.error(f"Error loading records: {str(e)}")
+            st.error(f"Error loading records securely: {str(e)}")
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =====================================================================
@@ -180,9 +185,10 @@ else:
         if search_target:
             try:
                 res = supabase.table("emt_ia_maintain").select("*").eq("ia_code", search_target).order("timestamp", desc=True).limit(1).execute()
-                if res.data and len(res.data) > 0:
+                res_data = res.data if hasattr(res, 'data') else res
+                if isinstance(res_data, list) and len(res_data) > 0:
                     st.success(f"Latest record entry for '{search_target}' loaded successfully!")
-                    row_data = res.data[0]
+                    row_data = res_data[0]
                     target_row_id = row_data.get("id")
                     default_ia = row_data.get("ia_code", search_target)
                     try:
@@ -198,7 +204,7 @@ else:
                 else:
                     st.error("No transactional logs found matching that assembly code.")
             except Exception as e:
-                st.error(f"Error fetching modify record: {str(e)}")
+                st.error(f"Error fetching modify record parameters: {str(e)}")
     else:
         st.markdown("<p class='form-title'>निरीक्षण रिकॉर्ड जोड़ें</p>", unsafe_allow_html=True)
         st.markdown("<p class='form-subtitle'>Add Inspection Record</p>", unsafe_allow_html=True)
@@ -216,7 +222,7 @@ else:
             ia_code = st.selectbox("", dropdown_list, index=select_idx, label_visibility="collapsed", key="tx_ia_code_select")
             
         with row1_col2:
-            st.markdown("<p class='field-label-hi'>तारीख</p><span class='field-label-en'>Inspection Date</span>", unsafe_allow_html=True)
+            st.markdown("<p class='field-label-hi'>तारीख</p><span class='field-label-en'>Inspection Date</span>", unsafe_allowed_html=True)
             date_val = st.date_input("", value=default_date, label_visibility="collapsed", key="tx_date_input")
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -245,18 +251,18 @@ else:
             st.markdown("<p class='field-label-hi'>टिपणी</p><span class='field-label-en'>Additional Remarks</span>", unsafe_allow_html=True)
             remarks = st.text_area("", value=default_rem, label_visibility="collapsed", height=80, key="tx_remarks_input")
 
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<br><br>", unsafe_allowed_html=True)
 
         action_col1, action_col2, action_col3 = st.columns([2.5, 2, 2.5])
         with action_col2:
             if st.session_state.current_view == "MODIFY":
                 st.markdown('<div class="update-btn">', unsafe_allow_html=True)
                 submit_triggered = st.form_submit_button("Update Record")
-                st.markdown('</div>', unsafe_allowed_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
             else:
                 st.markdown('<div class="save-btn">', unsafe_allow_html=True)
                 submit_triggered = st.form_submit_button("Save Record")
-                st.markdown('</div>', unsafe_allowed_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
         if submit_triggered:
             if ia_code == "-- असेंबली चुनें --":
@@ -293,3 +299,4 @@ else:
                     st.error(f"Database write exception caught: {str(ex)}")
 
     st.markdown("</div>", unsafe_allow_html=True)
+
