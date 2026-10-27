@@ -146,12 +146,14 @@ if st.session_state.current_view == "VIEW":
     st.markdown("<p class='form-subtitle'>Historical Inspection Ledger Records</p>", unsafe_allow_html=True)
     
     with st.spinner("Loading records from cloud database..."):
-        records = supabase.table("emt_ia_maintain").select("*").order("timestamp", desc=True).execute()
-        
-    if records.data:
-        st.dataframe(records.data, use_container_width=True)
-    else:
-        st.info("No logs currently recorded inside the transaction database.")
+        try:
+            records = supabase.table("emt_ia_maintain").select("*").order("timestamp", desc=True).execute()
+            if records.data:
+                st.dataframe(records.data, use_container_width=True)
+            else:
+                st.info("No logs currently recorded inside the transaction database.")
+        except Exception as e:
+            st.error(f"Error loading records: {str(e)}")
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =====================================================================
@@ -176,26 +178,27 @@ else:
         
         search_target = st.text_input("संशोधित करने के लिए असेंबली कोड डालें / Enter Assembly Code to Modify").strip()
         if search_target:
-            res = supabase.table("emt_ia_maintain").select("*").eq("ia_code", search_target).order("timestamp", desc=True).limit(1).execute()
-            if res.data:
-                st.success(f"Latest record entry for '{search_target}' loaded successfully!")
-                row_data = res.data if isinstance(res.data, list) and len(res.data) > 0 else res.data
-                if isinstance(row_data, list):
-                    row_data = row_data[0] if len(row_data) > 0 else {}
-                target_row_id = row_data.get("id")
-                default_ia = row_data.get("ia_code", search_target)
-                try:
-                    default_date = datetime.datetime.strptime(row_data.get("date"), "%Y-%m-%d").date()
-                except Exception:
-                    pass
-                default_cw = int(row_data.get("c_w_ht", 0) or 0)
-                default_encum = int(row_data.get("encum", 0) or 0)
-                default_gap = int(row_data.get("run_gap", 0) or 0)
-                default_obs = row_data.get("observation", "") or ""
-                default_desc = row_data.get("description", "") or ""
-                default_rem = row_data.get("remarks", "") or ""
-            else:
-                st.error("No transactional logs found matching that assembly code.")
+            try:
+                res = supabase.table("emt_ia_maintain").select("*").eq("ia_code", search_target).order("timestamp", desc=True).limit(1).execute()
+                if res.data and len(res.data) > 0:
+                    st.success(f"Latest record entry for '{search_target}' loaded successfully!")
+                    row_data = res.data[0]
+                    target_row_id = row_data.get("id")
+                    default_ia = row_data.get("ia_code", search_target)
+                    try:
+                        default_date = datetime.datetime.strptime(row_data.get("date"), "%Y-%m-%d").date()
+                    except Exception:
+                        pass
+                    default_cw = int(row_data.get("c_w_ht", 0) or 0)
+                    default_encum = int(row_data.get("encum", 0) or 0)
+                    default_gap = int(row_data.get("run_gap", 0) or 0)
+                    default_obs = row_data.get("observation", "") or ""
+                    default_desc = row_data.get("description", "") or ""
+                    default_rem = row_data.get("remarks", "") or ""
+                else:
+                    st.error("No transactional logs found matching that assembly code.")
+            except Exception as e:
+                st.error(f"Error fetching modify record: {str(e)}")
     else:
         st.markdown("<p class='form-title'>निरीक्षण रिकॉर्ड जोड़ें</p>", unsafe_allow_html=True)
         st.markdown("<p class='form-subtitle'>Add Inspection Record</p>", unsafe_allow_html=True)
@@ -249,11 +252,11 @@ else:
             if st.session_state.current_view == "MODIFY":
                 st.markdown('<div class="update-btn">', unsafe_allow_html=True)
                 submit_triggered = st.form_submit_button("Update Record")
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allowed_html=True)
             else:
                 st.markdown('<div class="save-btn">', unsafe_allow_html=True)
                 submit_triggered = st.form_submit_button("Save Record")
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allowed_html=True)
 
         if submit_triggered:
             if ia_code == "-- असेंबली चुनें --":
