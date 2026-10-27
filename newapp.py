@@ -4,14 +4,13 @@ from supabase import create_client, Client
 from supabase.lib.client_options import ClientOptions
 
 # =====================================================================
-# 1. FIXED SUPABASE CONNECTION PIPELINE (Bypasses 404 HTML Redirects)
+# 1. SUPABASE CONNECTION PIPELINE
 # =====================================================================
 @st.cache_resource
 def get_supabase_client() -> Client:
     url: str = st.secrets["supabase"]["SUPABASE_URL"].strip()
     key: str = st.secrets["supabase"]["SUPABASE_KEY"].strip()
     
-    # Enforces clean JSON request/response headers over HTTP pipelines
     custom_options = ClientOptions(
         postgrest_client_timeout=15,
         headers={"Accept": "application/json", "Content-Type": "application/json"}
@@ -23,7 +22,6 @@ try:
 except Exception as e:
     st.error(f"Configuration Critical Failure: Check your Streamlit Secrets box settings. Details: {str(e)}")
 
-# Fetch active insulator assemblies from master table safely
 @st.cache_data(ttl=5)
 def fetch_registered_assemblies():
     try:
@@ -44,13 +42,10 @@ st.set_page_config(page_title="Add Inspection Record", layout="wide")
 
 st.markdown("""
     <style>
-    /* Center and constrain main container card sizing */
     .block-container {
         padding-top: 1.5rem;
         max-width: 1100px !important;
     }
-    
-    /* Top horizontal navigation styling buttons */
     div.stButton > button[key^="nav_"] {
         background-color: transparent;
         color: #007acc;
@@ -59,8 +54,6 @@ st.markdown("""
         font-size: 16px;
         padding: 6px 16px;
     }
-    
-    /* White Card Wrapper Container matching the design border */
     .main-card {
         border: 2px solid #e8edf3;
         border-radius: 8px;
@@ -68,8 +61,6 @@ st.markdown("""
         background-color: #ffffff;
         box-shadow: 0 4px 12px rgba(0,0,0,0.01);
     }
-    
-    /* Form Centered Headers */
     .form-title {
         text-align: center;
         font-weight: bold;
@@ -84,8 +75,6 @@ st.markdown("""
         font-size: 18px;
         margin-bottom: 30px;
     }
-    
-    /* Dual-Language Field Label Styling */
     .field-label-hi {
         font-size: 15px;
         font-weight: 500;
@@ -99,14 +88,10 @@ st.markdown("""
         margin-bottom: 6px;
         display: block;
     }
-    
-    /* Center the action form buttons */
     .stFormSubmitButton {
         display: flex;
         justify-content: center;
     }
-    
-    /* Green Save Action Button matching layout requirements */
     .save-btn button {
         background-color: #00a86b !important;
         color: white !important;
@@ -117,8 +102,6 @@ st.markdown("""
         border: none !important;
         width: auto !important;
     }
-    
-    /* Blue Update Action Button for Modification operations */
     .update-btn button {
         background-color: #007acc !important;
         color: white !important;
@@ -150,6 +133,7 @@ with nav_col4:
         st.session_state.current_view = "MODIFY"
 
 st.markdown("<br>", unsafe_allow_html=True)
+
 # =====================================================================
 # VIEW MODE: HISTORICAL DATA TABLE DISPLAY
 # =====================================================================
@@ -244,11 +228,38 @@ else:
             st.markdown("<p class='field-label-hi'>एन्कम्ब्रन्स (मिमी)</p><span class='field-label-en'>Encumbrance (mm)</span>", unsafe_allow_html=True)
             encum = st.number_input("", value=default_encum, step=1, label_visibility="collapsed", key="tx_encum_input")
         with row2_col3:
+        row1_col1, row1_col2 = st.columns(2)
+        with row1_col1:
+            st.markdown("<p class='field-label-hi'>सिलेक्ट इंसुलेटर असेंबली</p><span class='field-label-en'>Select Insulator Assembly</span>", unsafe_allow_html=True)
+            dropdown_list = ["-- असेंबली चुनें --"] + master_assembly_options
+            if default_ia in dropdown_list:
+                select_idx = dropdown_list.index(default_ia)
+            else:
+                dropdown_list.append(default_ia)
+                select_idx = len(dropdown_list) - 1
+            ia_code = st.selectbox("", dropdown_list, index=select_idx, label_visibility="collapsed", key="tx_ia_code_select")
+            
+        with row1_col2:
+            st.markdown("<p class='field-label-hi'>तारीख</p><span class='field-label-en'>Inspection Date</span>", unsafe_allow_html=True)
+            date_val = st.date_input("", value=default_date, label_visibility="collapsed", key="tx_date_input")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- ROW 2: MEASUREMENTS ---
+        row2_col1, row2_col2, row2_col3 = st.columns(3)
+        with row2_col1:
+            st.markdown("<p class='field-label-hi'>कॉन्टैक्ट वायर हाईट (मिमी)</p><span class='field-label-en'>Contact Wire Height (mm)</span>", unsafe_allow_html=True)
+            c_w_ht = st.number_input("", value=default_cw, step=1, label_visibility="collapsed", key="tx_cw_input")
+        with row2_col2:
+            st.markdown("<p class='field-label-hi'>एन्कम्ब्रन्स (मिमी)</p><span class='field-label-en'>Encumbrance (mm)</span>", unsafe_allow_html=True)
+            encum = st.number_input("", value=default_encum, step=1, label_visibility="collapsed", key="tx_encum_input")
+        with row2_col3:
             st.markdown("<p class='field-label-hi'>रनर गैप (मिमी)</p><span class='field-label-en'>Runner Gap (mm)</span>", unsafe_allow_html=True)
             run_gap = st.number_input("", value=default_gap, step=1, label_visibility="collapsed", key="tx_rungap_input")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
+        # --- ROW 3: REASONS & REMARKS ---
         row3_col1, row3_col2, row3_col3 = st.columns(3)
         with row3_col1:
             st.markdown("<p class='field-label-hi'>ऑब्जर्वेशन</p><span class='field-label-en'>Observation Details</span>", unsafe_allow_html=True)
@@ -262,6 +273,7 @@ else:
 
         st.markdown("<br><br>", unsafe_allow_html=True)
 
+        # --- SUBMIT ACTIONS HANDLING BLOCK ---
         action_col1, action_col2, action_col3 = st.columns([2.5, 2, 2.5])
         with action_col2:
             if st.session_state.current_view == "MODIFY":
