@@ -141,7 +141,7 @@ st.markdown("<br>", unsafe_allowed_html=True)
 # VIEW MODE: HISTORICAL DATA TABLE DISPLAY
 # =====================================================================
 if st.session_state.current_view == "VIEW":
-    st.markdown("<div class='main-card'>", unsafe_allowed_html=True)
+    st.markdown("<div class='main-card'>", unsafe_allow_html=True)
     st.markdown("<p class='form-title'>ऐतिहासिक निरीक्षण रिकॉर्ड</p>", unsafe_allowed_html=True)
     st.markdown("<p class='form-subtitle'>Historical Inspection Ledger Records</p>", unsafe_allowed_html=True)
     
