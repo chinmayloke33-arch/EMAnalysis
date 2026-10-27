@@ -133,7 +133,6 @@ with nav_col4:
         st.session_state.current_view = "MODIFY"
 
 st.markdown("<br>", unsafe_allow_html=True)
-
 # =====================================================================
 # VIEW MODE: HISTORICAL DATA TABLE DISPLAY
 # =====================================================================
@@ -220,31 +219,6 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        row2_col1, row2_col2, row2_col3 = st.columns(3)
-        with row2_col1:
-            st.markdown("<p class='field-label-hi'>कॉन्टैक्ट वायर हाईट (मिमी)</p><span class='field-label-en'>Contact Wire Height (mm)</span>", unsafe_allow_html=True)
-            c_w_ht = st.number_input("", value=default_cw, step=1, label_visibility="collapsed", key="tx_cw_input")
-        with row2_col2:
-            st.markdown("<p class='field-label-hi'>एन्कम्ब्रन्स (मिमी)</p><span class='field-label-en'>Encumbrance (mm)</span>", unsafe_allow_html=True)
-            encum = st.number_input("", value=default_encum, step=1, label_visibility="collapsed", key="tx_encum_input")
-        with row2_col3:
-        row1_col1, row1_col2 = st.columns(2)
-        with row1_col1:
-            st.markdown("<p class='field-label-hi'>सिलेक्ट इंसुलेटर असेंबली</p><span class='field-label-en'>Select Insulator Assembly</span>", unsafe_allow_html=True)
-            dropdown_list = ["-- असेंबली चुनें --"] + master_assembly_options
-            if default_ia in dropdown_list:
-                select_idx = dropdown_list.index(default_ia)
-            else:
-                dropdown_list.append(default_ia)
-                select_idx = len(dropdown_list) - 1
-            ia_code = st.selectbox("", dropdown_list, index=select_idx, label_visibility="collapsed", key="tx_ia_code_select")
-            
-        with row1_col2:
-            st.markdown("<p class='field-label-hi'>तारीख</p><span class='field-label-en'>Inspection Date</span>", unsafe_allow_html=True)
-            date_val = st.date_input("", value=default_date, label_visibility="collapsed", key="tx_date_input")
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
         # --- ROW 2: MEASUREMENTS ---
         row2_col1, row2_col2, row2_col3 = st.columns(3)
         with row2_col1:
@@ -259,7 +233,7 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # --- ROW 3: REASONS & REMARKS ---
+        # --- ROW 3: TEXT AREAS ---
         row3_col1, row3_col2, row3_col3 = st.columns(3)
         with row3_col1:
             st.markdown("<p class='field-label-hi'>ऑब्जर्वेशन</p><span class='field-label-en'>Observation Details</span>", unsafe_allow_html=True)
