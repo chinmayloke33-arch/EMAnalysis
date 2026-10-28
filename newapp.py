@@ -695,6 +695,68 @@ def view_records():
 
 
 # ============================================================
+# INSPECTION TRANSACTION SECTION: ADD / VIEW / MODIFY
+# ============================================================
+
+def view_inspection_transactions():
+    st.subheader("Inspection Transaction Records")
+    try:
+        records = fetch_records(TRANSACTION_TABLE)
+        if not records:
+            st.info(f"No inspection transactions found in {TRANSACTION_TABLE}.")
+            return
+
+        dataframe = pd.DataFrame(records)
+        st.caption(f"Source table: {TRANSACTION_TABLE}")
+        st.write(f"Total transactions: **{len(dataframe)}**")
+        search_text = st.text_input(
+            "Search inspection transactions",
+            placeholder="Search by transaction ID, assembly code, employee, status, or date...",
+            key="inspection_transactions_search",
+        )
+        filtered_df = dataframe.copy()
+        if search_text.strip():
+            query = search_text.strip()
+            mask = filtered_df.astype(str).apply(
+                lambda column: column.str.contains(
+                    query, case=False, regex=False, na=False
+                )
+            ).any(axis=1)
+            filtered_df = filtered_df[mask]
+
+        st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+        st.write(f"Matching transactions: **{len(filtered_df)}**")
+        if not filtered_df.empty:
+            show_export_buttons(filtered_df, "inspection_transaction_records")
+    except Exception as exc:
+        show_database_error("Unable to retrieve inspection transaction records.", exc)
+
+
+def inspection_transaction_section():
+    st.markdown(
+        '<div class="form-section-header">'
+        '<p class="form-section-hi">निरीक्षण लेन-देन</p>'
+        '<p class="form-section-en">Inspection Transactions</p>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    transaction_action = st.radio(
+        "Inspection Transaction Options",
+        options=["Add Inspection", "View Transactions", "Modify Transaction"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="inspection_transaction_action",
+    )
+    st.divider()
+    if transaction_action == "Add Inspection":
+        add_inspection()
+    elif transaction_action == "View Transactions":
+        view_inspection_transactions()
+    else:
+        modify_inspection_records()
+
+
+# ============================================================
 # MODIFY ASSEMBLY MASTER
 # ============================================================
 
@@ -954,28 +1016,25 @@ def main():
     current_tab = st.radio(
         "Application Section",
         options=[
-            "New Inspection",
             "Insulator Assembly Master",
-            "View Records",
-            "Modify Inspection",
+            "Inspection Transactions",
+            "View All Records",
         ],
         horizontal=True,
         label_visibility="collapsed",
+        key="application_section",
     )
 
     st.divider()
 
-    if current_tab == "New Inspection":
-        add_inspection()
-
-    elif current_tab == "Insulator Assembly Master":
+    if current_tab == "Insulator Assembly Master":
         assembly_master_section()
 
-    elif current_tab == "View Records":
-        view_records()
+    elif current_tab == "Inspection Transactions":
+        inspection_transaction_section()
 
-    elif current_tab == "Modify Inspection":
-        modify_inspection_records()
+    elif current_tab == "View All Records":
+        view_records()
 
     st.markdown(
         '<div class="footer-credits">'
