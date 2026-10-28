@@ -531,9 +531,16 @@ def add_inspection():
 
     available_assemblies = fetch_assembly_codes()
     if not available_assemblies:
-        st.warning("No assembly codes were found. Add an Assembly Master record before creating an inspection.")
-        return
+        st.warning(
+            "No assembly codes could be loaded from emm_ins_asmbly. "
+            "The inspection form is still shown below, but you must add or "
+            "restore an Assembly Master record before saving a transaction. "
+            "If assembly records already exist, check the Supabase connection "
+            "and SELECT permissions for this table."
+        )
 
+    # Do not return early when the assembly list is empty: render the full
+    # inspection form so users can see all fields and diagnose the issue.
     with st.form("new_inspection_form"):
         col1, col2, col3 = st.columns(3)
         with col1:
