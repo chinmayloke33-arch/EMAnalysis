@@ -758,6 +758,74 @@ def modify_assembly_records():
         show_database_error("Unable to modify the assembly record.", exc)
 
 
+
+# ============================================================
+# VIEW ASSEMBLY MASTER (USED INSIDE MASTER SECTION)
+# ============================================================
+
+def view_assembly_master():
+    st.subheader("View Insulator Assembly Master Records")
+    if st.button("Refresh Assembly Records", key="refresh_assembly_master"):
+        st.rerun()
+
+    try:
+        records = fetch_records(ASSEMBLY_TABLE)
+        if not records:
+            st.info("No assembly master records found.")
+            return
+
+        dataframe = pd.DataFrame(records)
+        search_text = st.text_input(
+            "Search assembly records",
+            placeholder="Enter assembly code, station code, or location...",
+            key="assembly_master_search",
+        )
+        filtered_df = dataframe.copy()
+        if search_text.strip():
+            query = search_text.strip()
+            mask = filtered_df.astype(str).apply(
+                lambda column: column.str.contains(
+                    query, case=False, regex=False, na=False
+                )
+            ).any(axis=1)
+            filtered_df = filtered_df[mask]
+
+        st.write(f"Total assemblies: **{len(dataframe)}**")
+        st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+        st.write(f"Matching assemblies: **{len(filtered_df)}**")
+        if not filtered_df.empty:
+            show_export_buttons(filtered_df, "assembly_master_records")
+    except Exception as exc:
+        show_database_error("Unable to retrieve assembly master records.", exc)
+
+
+# ============================================================
+# ASSEMBLY MASTER SECTION: ADD / VIEW / MODIFY
+# ============================================================
+
+def assembly_master_section():
+    st.markdown(
+        '<div class="form-section-header">'
+        '<p class="form-section-hi">इंसुलेटर असेंबली मास्टर</p>'
+        '<p class="form-section-en">Insulator Assembly Master</p>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    master_action = st.radio(
+        "Assembly Master Options",
+        options=["Add Assembly", "View Assemblies", "Modify Assembly"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="assembly_master_action",
+    )
+    st.divider()
+    if master_action == "Add Assembly":
+        add_assembly_master()
+    elif master_action == "View Assemblies":
+        view_assembly_master()
+    else:
+        modify_assembly_records()
+
 # ============================================================
 # MODIFY INSPECTION TRANSACTIONS
 # ============================================================
@@ -887,9 +955,9 @@ def main():
         "Application Section",
         options=[
             "New Inspection",
-            "Add Assembly Master",
+            "Insulator Assembly Master",
             "View Records",
-            "Modify Records",
+            "Modify Inspection",
         ],
         horizontal=True,
         label_visibility="collapsed",
@@ -900,14 +968,14 @@ def main():
     if current_tab == "New Inspection":
         add_inspection()
 
-    elif current_tab == "Add Assembly Master":
-        add_assembly_master()
+    elif current_tab == "Insulator Assembly Master":
+        assembly_master_section()
 
     elif current_tab == "View Records":
         view_records()
 
-    elif current_tab == "Modify Records":
-        modify_records()
+    elif current_tab == "Modify Inspection":
+        modify_inspection_records()
 
     st.markdown(
         '<div class="footer-credits">'
@@ -920,4 +988,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
