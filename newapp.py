@@ -1,4 +1,3 @@
-
 import datetime
 import io
 import secrets
@@ -430,8 +429,8 @@ def add_assembly_master():
         with col5:
             st.markdown(
                 label(
-                    "इंसुलेटर का मेक स्थिति",
-                    "Make Insulator Status",
+                    "इन्सुलेटर का मेक (कोअर)",
+                    "Make Insulator (Core)",
                 ),
                 unsafe_allow_html=True,
             )
@@ -531,142 +530,74 @@ def add_inspection():
     )
 
     available_assemblies = fetch_assembly_codes()
-
     if not available_assemblies:
-        st.warning(
-            "No assembly codes were found. "
-            "Add an Assembly Master record before creating an inspection."
-        )
+        st.warning("No assembly codes were found. Add an Assembly Master record before creating an inspection.")
         return
 
     with st.form("new_inspection_form"):
-        col1, col2 = st.columns(2)
-
+        col1, col2, col3 = st.columns(3)
         with col1:
-            st.markdown(
-                label(
-                    "इंसुलेटर असेंबली चुनें",
-                    "Select Insulator Assembly",
-                ),
-                unsafe_allow_html=True,
-            )
-
-            selected_assembly = st.selectbox(
-                "assembly_select",
-                options=[PLACEHOLDER] + available_assemblies,
-                label_visibility="collapsed",
-            )
-
+            st.markdown(label("इंसुलेटर असेंबली चुनें", "Select Insulator Assembly"), unsafe_allow_html=True)
+            selected_assembly = st.selectbox("assembly_select", options=[PLACEHOLDER] + available_assemblies, label_visibility="collapsed")
         with col2:
-            st.markdown(
-                label("तारीख", "Inspection Date"),
-                unsafe_allow_html=True,
-            )
-
-            inspection_date = st.date_input(
-                "inspection_date_input",
-                value=datetime.datetime.now(IST).date(),
-                label_visibility="collapsed",
-            )
-
-        col3, col4, col5 = st.columns(3)
-
+            st.markdown(label("तारीख", "Inspection / Maintenance Date"), unsafe_allow_html=True)
+            inspection_date = st.date_input("inspection_date_input", value=datetime.datetime.now(IST).date(), label_visibility="collapsed")
         with col3:
-            st.markdown(
-                label(
-                    "कॉन्टैक्ट वायर हाइट (मिमी)",
-                    "Contact Wire Height (mm)",
-                ),
-                unsafe_allow_html=True,
-            )
+            st.markdown(label("समय", "Inspection / Maintenance Time"), unsafe_allow_html=True)
+            inspection_time = st.time_input("inspection_time_input", value=datetime.datetime.now(IST).time().replace(second=0, microsecond=0), label_visibility="collapsed")
 
-            contact_wire_height = st.number_input(
-                "contact_height",
-                min_value=0.0,
-                step=1.0,
-                label_visibility="collapsed",
-            )
-
+        col4, col5, col6 = st.columns(3)
         with col4:
-            st.markdown(
-                label("एनकम्ब्रन्स (मिमी)", "Encumbrance (mm)"),
-                unsafe_allow_html=True,
-            )
-
-            encumbrance = st.number_input(
-                "encumbrance_val",
-                min_value=0.0,
-                step=1.0,
-                label_visibility="collapsed",
-            )
-
+            st.markdown(label("कर्मचारी संख्या", "Employee Number"), unsafe_allow_html=True)
+            employee_no = st.text_input("employee_no_input", label_visibility="collapsed")
         with col5:
-            st.markdown(
-                label("रनर गैप (मिमी)", "Runner Gap (mm)"),
-                unsafe_allow_html=True,
-            )
-
-            runner_gap = st.number_input(
-                "runner_gap_val",
-                min_value=0.0,
-                step=1.0,
-                label_visibility="collapsed",
-            )
-
-        st.write("### Inspection Details")
-
-        col6, col7 = st.columns(2)
-
+            st.markdown(label("पर्यवेक्षक का नाम", "Name of Supervisor"), unsafe_allow_html=True)
+            supervisor_name = st.text_input("supervisor_name_input", label_visibility="collapsed")
         with col6:
-            st.markdown(
-                label("ऑब्जर्वेशन", "Observation Details"),
-                unsafe_allow_html=True,
-            )
+            st.markdown(label("निरीक्षण स्थिति", "Inspection Status"), unsafe_allow_html=True)
+            inspection_status = st.selectbox("inspection_status_input", ["Work in Progress", "Work Completed"], label_visibility="collapsed")
 
-            observations = st.text_area(
-                "obs_details",
-                height=120,
-                label_visibility="collapsed",
-            )
-
+        col7, col8, col9 = st.columns(3)
         with col7:
-            st.markdown(
-                label(
-                    "किए गए कार्य का विवरण",
-                    "Description / Work Done",
-                ),
-                unsafe_allow_html=True,
-            )
+            st.markdown(label("कॉन्टैक्ट वायर हाइट (मिमी)", "Contact Wire Height (mm)"), unsafe_allow_html=True)
+            contact_wire_height = st.number_input("contact_height", min_value=0.0, step=1.0, label_visibility="collapsed")
+        with col8:
+            st.markdown(label("एनकम्ब्रन्स (मिमी)", "Encumbrance (mm)"), unsafe_allow_html=True)
+            encumbrance = st.number_input("encumbrance_val", min_value=0.0, step=1.0, label_visibility="collapsed")
+        with col9:
+            st.markdown(label("रनर गैप (मिमी)", "Runner Gap (mm)"), unsafe_allow_html=True)
+            runner_gap = st.number_input("runner_gap_val", min_value=0.0, step=1.0, label_visibility="collapsed")
 
-            work_done = st.text_area(
-                "work_details",
-                height=120,
-                label_visibility="collapsed",
-            )
-
-        st.markdown(
-            label("टिप्पणी", "Additional Remarks"),
-            unsafe_allow_html=True,
-        )
-
-        remarks = st.text_area(
-            "remarks_details",
-            height=90,
-            label_visibility="collapsed",
-        )
-
+        col10, col11 = st.columns(2)
+        with col10:
+            st.markdown(label("ऑब्जर्वेशन", "Observation Details"), unsafe_allow_html=True)
+            observations = st.text_area("obs_details", height=120, label_visibility="collapsed")
+        with col11:
+            st.markdown(label("किए गए कार्य का विवरण", "Description / Work Done"), unsafe_allow_html=True)
+            work_done = st.text_area("work_details", height=120, label_visibility="collapsed")
+        st.markdown(label("टिप्पणी", "Additional Remarks"), unsafe_allow_html=True)
+        remarks = st.text_area("remarks_details", height=90, label_visibility="collapsed")
         submitted = st.form_submit_button("Save Inspection Record")
 
     if not submitted:
         return
-
     if selected_assembly == PLACEHOLDER:
         st.error("Please select an assembly before saving the inspection.")
+        return
+    if not clean(employee_no):
+        st.error("Please enter the employee number.")
+        return
+    if not clean(supervisor_name):
+        st.error("Please enter the supervisor name.")
         return
 
     transaction_payload = {
         "ia_code": selected_assembly,
         "inspect_date": inspection_date.isoformat(),
+        "inspect_time": inspection_time.strftime("%H:%M:%S"),
+        "employee_no": clean(employee_no),
+        "supervisor_name": clean(supervisor_name),
+        "inspection_status": inspection_status,
         "cw_height": float(contact_wire_height),
         "encumbrance": float(encumbrance),
         "runner_gap": float(runner_gap),
@@ -674,28 +605,17 @@ def add_inspection():
         "work_done": clean(work_done),
         "remarks": clean(remarks),
     }
-
     try:
-        response = (
-            supabase.table(TRANSACTION_TABLE)
-            .insert(transaction_payload)
-            .execute()
-        )
-
+        response = supabase.table(TRANSACTION_TABLE).insert(transaction_payload).execute()
         if response.data:
             st.success("Inspection transaction saved successfully!")
+            if inspection_status == "Work in Progress":
+                st.info("Status is Work in Progress. Email notification is not configured in this app yet; configure the approved KRCL email service and employee email lookup to enable it.")
             st.balloons()
         else:
-            st.warning(
-                "No rows were returned after saving. "
-                "Verify the table permissions and database response."
-            )
-
+            st.warning("No rows were returned after saving. Verify table permissions and database response.")
     except Exception as exc:
-        show_database_error(
-            "Failed to save the inspection transaction.",
-            exc,
-        )
+        show_database_error("Failed to save the inspection transaction. Verify that the transaction table contains the required columns.", exc)
 
 
 # ============================================================
@@ -783,108 +703,56 @@ def modify_assembly_records():
 
     try:
         records = fetch_records(ASSEMBLY_TABLE)
-
         if not records:
             st.info("No assembly records are available to modify.")
             return
 
         dataframe = pd.DataFrame(records)
-
         if "ia_code" not in dataframe.columns:
             st.error("The assembly table does not contain an ia_code column.")
             return
 
-        codes = sorted(
-            dataframe["ia_code"].dropna().astype(str).unique().tolist()
-        )
-
+        codes = sorted(dataframe["ia_code"].dropna().astype(str).unique().tolist())
         if not codes:
             st.info("No assembly codes are available.")
             return
 
-        selected_code = st.selectbox(
-            "Select Assembly Code",
-            options=codes,
-        )
-
-        matching_rows = dataframe[
-            dataframe["ia_code"].astype(str) == selected_code
-        ]
-
+        selected_code = st.selectbox("Select Assembly Code", options=codes)
+        matching_rows = dataframe[dataframe["ia_code"].astype(str) == selected_code]
         if matching_rows.empty:
             st.warning("The selected assembly was not found.")
             return
-
         row = matching_rows.iloc[0]
 
+        st.text_input("Insulator Assembly Code (cannot be changed)", value=selected_code, disabled=True)
+        st.text_input("Station Code (cannot be changed)", value=clean(row.get("stn_cd", "")), disabled=True)
+
         with st.form("edit_assembly_form"):
-            new_station = st.text_input(
-                "Station Code",
-                value=clean(row.get("stn_cd", "")),
-            )
-
-            new_location = st.text_input(
-                "Location Between",
-                value=clean(row.get("loc_bet", "")),
-            )
-
-            new_es = st.text_input(
-                "Elementary Section Between",
-                value=clean(row.get("es_bet", "")),
-            )
-
-            new_make = st.text_input(
-                "Make Insulator (9-ton)",
-                value=clean(row.get("make_9", "")),
-            )
-
-            new_make_status = st.text_input(
-                "Make Insulator Status",
-                value=clean(row.get("make_status", "")),
-            )
+            new_location = st.text_input("Location Between", value=clean(row.get("loc_bet", "")))
+            new_es = st.text_input("Elementary Section Between", value=clean(row.get("es_bet", "")))
+            new_make = st.text_input("Make Insulator (9-ton)", value=clean(row.get("make_9", "")))
+            new_make_status = st.text_input("Make Insulator (Core)", value=clean(row.get("make_status", "")))
 
             current_status = clean(row.get("status", "Active"))
-
             status_options = ["Active", "Inactive"]
-
-            status_index = (
-                status_options.index(current_status)
-                if current_status in status_options
-                else 0
-            )
-
-            new_status = st.selectbox(
-                "Status",
-                options=status_options,
-                index=status_index,
-            )
-
+            status_index = status_options.index(current_status) if current_status in status_options else 0
+            new_status = st.selectbox("Status", options=status_options, index=status_index)
             submitted = st.form_submit_button("Save Assembly Changes")
 
         if submitted:
             payload = {
-                "stn_cd": clean(new_station),
                 "loc_bet": clean(new_location),
                 "es_bet": clean(new_es),
                 "make_9": clean(new_make),
                 "make_status": clean(new_make_status),
                 "status": new_status,
             }
-
-            response = (
-                supabase.table(ASSEMBLY_TABLE)
-                .update(payload)
-                .eq("ia_code", selected_code)
-                .execute()
-            )
-
+            response = supabase.table(ASSEMBLY_TABLE).update(payload).eq("ia_code", selected_code).execute()
             if response.data:
                 st.success("Assembly master updated successfully!")
+                st.rerun()
             else:
-                st.warning(
-                    "The update returned no rows. "
-                    "Check the database permissions and row-level security."
-                )
+                st.warning("The update returned no rows. Check database permissions and row-level security.")
 
     except Exception as exc:
         show_database_error("Unable to modify the assembly record.", exc)
@@ -896,109 +764,67 @@ def modify_assembly_records():
 
 def modify_inspection_records():
     st.subheader("Modify Inspection Transactions")
-
     try:
         records = fetch_records(TRANSACTION_TABLE)
-
         if not records:
             st.info("No inspection transactions are available to modify.")
             return
-
         dataframe = pd.DataFrame(records)
-
-        required_columns = [
-            "id",
-            "ia_code",
-            "inspect_date",
-        ]
-
-        missing_columns = [
-            column
-            for column in required_columns
-            if column not in dataframe.columns
-        ]
-
+        required_columns = ["id", "ia_code", "inspect_date"]
+        missing_columns = [column for column in required_columns if column not in dataframe.columns]
         if missing_columns:
-            st.error(
-                "The transaction table is missing columns required by "
-                "this editor: " + ", ".join(missing_columns)
-            )
-            st.info(
-                "This editor expects each transaction to have a unique "
-                "'id', an 'ia_code', and an 'inspect_date'."
-            )
+            st.error("The transaction table is missing columns required by this editor: " + ", ".join(missing_columns))
+            st.info("This editor expects each transaction to have a unique id, an ia_code, and an inspect_date.")
             return
 
         dataframe["display_id"] = (
-            dataframe["ia_code"].fillna("").astype(str)
-            + " | "
-            + dataframe["inspect_date"].fillna("").astype(str)
-            + " | ID: "
+            dataframe["ia_code"].fillna("").astype(str) + " | "
+            + dataframe["inspect_date"].fillna("").astype(str) + " | ID: "
             + dataframe["id"].astype(str)
         )
-
-        selected_display = st.selectbox(
-            "Select Inspection Transaction",
-            options=dataframe["display_id"].tolist(),
-        )
-
-        row = dataframe[
-            dataframe["display_id"] == selected_display
-        ].iloc[0]
-
+        selected_display = st.selectbox("Select Inspection Transaction", options=dataframe["display_id"].tolist())
+        row = dataframe[dataframe["display_id"] == selected_display].iloc[0]
         record_id = row["id"]
+
+        try:
+            existing_date = datetime.date.fromisoformat(str(row.get("inspect_date", ""))[:10])
+        except (ValueError, TypeError):
+            existing_date = datetime.datetime.now(IST).date()
+        try:
+            existing_time = datetime.time.fromisoformat(str(row.get("inspect_time", "09:00:00"))[:8])
+        except (ValueError, TypeError):
+            existing_time = datetime.time(9, 0)
 
         with st.form("edit_inspection_form"):
             st.write(f"Transaction ID: **{record_id}**")
             st.write(f"Assembly Code: **{row['ia_code']}**")
-
-            st.caption(
-                "The assembly code and inspection date are retained "
-                "as originally recorded."
-            )
-
-            new_cw = st.number_input(
-                "Contact Wire Height (mm)",
-                min_value=0.0,
-                value=float(row.get("cw_height", 0) or 0),
-                step=1.0,
-            )
-
-            new_enc = st.number_input(
-                "Encumbrance (mm)",
-                min_value=0.0,
-                value=float(row.get("encumbrance", 0) or 0),
-                step=1.0,
-            )
-
-            new_rg = st.number_input(
-                "Runner Gap (mm)",
-                min_value=0.0,
-                value=float(row.get("runner_gap", 0) or 0),
-                step=1.0,
-            )
-
-            new_obs = st.text_area(
-                "Observation Details",
-                value=clean(row.get("observation", "")),
-            )
-
-            new_work = st.text_area(
-                "Description / Work Done",
-                value=clean(row.get("work_done", "")),
-            )
-
-            new_remarks = st.text_area(
-                "Additional Remarks",
-                value=clean(row.get("remarks", "")),
-            )
-
-            submitted = st.form_submit_button(
-                "Save Inspection Changes"
-            )
+            st.caption("Inspection date and time are editable. Assembly code is retained as originally recorded.")
+            new_date = st.date_input("Inspection / Maintenance Date", value=existing_date)
+            new_time = st.time_input("Inspection / Maintenance Time", value=existing_time)
+            new_employee = st.text_input("Employee Number", value=clean(row.get("employee_no", "")))
+            new_supervisor = st.text_input("Name of Supervisor", value=clean(row.get("supervisor_name", "")))
+            status_options = ["Work in Progress", "Work Completed"]
+            current_inspection_status = clean(row.get("inspection_status", "Work in Progress"))
+            status_index = status_options.index(current_inspection_status) if current_inspection_status in status_options else 0
+            new_inspection_status = st.selectbox("Inspection Status", options=status_options, index=status_index)
+            new_cw = st.number_input("Contact Wire Height (mm)", min_value=0.0, value=float(row.get("cw_height", 0) or 0), step=1.0)
+            new_enc = st.number_input("Encumbrance (mm)", min_value=0.0, value=float(row.get("encumbrance", 0) or 0), step=1.0)
+            new_rg = st.number_input("Runner Gap (mm)", min_value=0.0, value=float(row.get("runner_gap", 0) or 0), step=1.0)
+            new_obs = st.text_area("Observation Details", value=clean(row.get("observation", "")))
+            new_work = st.text_area("Description / Work Done", value=clean(row.get("work_done", "")))
+            new_remarks = st.text_area("Additional Remarks", value=clean(row.get("remarks", "")))
+            submitted = st.form_submit_button("Save Inspection Changes")
 
         if submitted:
+            if not clean(new_employee) or not clean(new_supervisor):
+                st.error("Employee number and supervisor name are required.")
+                return
             payload = {
+                "inspect_date": new_date.isoformat(),
+                "inspect_time": new_time.strftime("%H:%M:%S"),
+                "employee_no": clean(new_employee),
+                "supervisor_name": clean(new_supervisor),
+                "inspection_status": new_inspection_status,
                 "cw_height": float(new_cw),
                 "encumbrance": float(new_enc),
                 "runner_gap": float(new_rg),
@@ -1006,30 +832,16 @@ def modify_inspection_records():
                 "work_done": clean(new_work),
                 "remarks": clean(new_remarks),
             }
-
-            response = (
-                supabase.table(TRANSACTION_TABLE)
-                .update(payload)
-                .eq("id", record_id)
-                .execute()
-            )
-
+            response = supabase.table(TRANSACTION_TABLE).update(payload).eq("id", record_id).execute()
             if response.data:
-                st.success(
-                    f"Inspection transaction {record_id} updated successfully!"
-                )
+                st.success(f"Inspection transaction {record_id} updated successfully!")
+                if new_inspection_status == "Work in Progress":
+                    st.info("Status is Work in Progress. Email notification is not configured in this app yet; configure the approved KRCL email service and employee email lookup to enable it.")
+                st.rerun()
             else:
-                st.warning(
-                    "The update returned no rows. "
-                    "Check the transaction ID, database permissions, "
-                    "and row-level security policies."
-                )
-
+                st.warning("The update returned no rows. Check transaction ID, database permissions, and row-level security policies.")
     except Exception as exc:
-        show_database_error(
-            "Unable to modify the inspection transaction.",
-            exc,
-        )
+        show_database_error("Unable to modify the inspection transaction. Verify that the transaction table contains the required columns.", exc)
 
 
 # ============================================================
