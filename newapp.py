@@ -616,8 +616,6 @@ def add_inspection():
         response = supabase.table(TRANSACTION_TABLE).insert(transaction_payload).execute()
         if response.data:
             st.success("Inspection transaction saved successfully!")
-            if inspection_status == "Work in Progress":
-                st.info("Status is Work in Progress. Email notification is not configured in this app yet; configure the approved KRCL email service and employee email lookup to enable it.")
             st.balloons()
         else:
             st.warning("No rows were returned after saving. Verify table permissions and database response.")
@@ -972,8 +970,6 @@ def modify_inspection_records():
             response = supabase.table(TRANSACTION_TABLE).update(payload).eq("id", record_id).execute()
             if response.data:
                 st.success(f"Inspection transaction {record_id} updated successfully!")
-                if new_inspection_status == "Work in Progress":
-                    st.info("Status is Work in Progress. Email notification is not configured in this app yet; configure the approved KRCL email service and employee email lookup to enable it.")
                 st.rerun()
             else:
                 st.warning("The update returned no rows. Check transaction ID, database permissions, and row-level security policies.")
