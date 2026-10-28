@@ -491,7 +491,7 @@ def add_assembly_master():
             "loc_bet": clean(loc_bet),
             "es_bet": clean(es_bet),
             "make_9": clean(make_9t),
-            "make_status": clean(make_status),
+            "make_s": clean(make_status),
             "status": status,
         }
 
@@ -800,7 +800,7 @@ def modify_assembly_records():
             new_location = st.text_input("Location Between", value=clean(row.get("loc_bet", "")))
             new_es = st.text_input("Elementary Section Between", value=clean(row.get("es_bet", "")))
             new_make = st.text_input("Make Insulator (9-ton)", value=clean(row.get("make_9", "")))
-            new_make_status = st.text_input("Make Insulator (Core)", value=clean(row.get("make_status", "")))
+            new_make_status = st.text_input("Make Insulator (Core)", value=clean(row.get("make_s", "")))
 
             current_status = clean(row.get("status", "Active"))
             status_options = ["Active", "Inactive"]
@@ -813,7 +813,7 @@ def modify_assembly_records():
                 "loc_bet": clean(new_location),
                 "es_bet": clean(new_es),
                 "make_9": clean(new_make),
-                "make_status": clean(new_make_status),
+                "make_s": clean(new_make_status),
                 "status": new_status,
             }
             response = supabase.table(ASSEMBLY_TABLE).update(payload).eq("ia_code", selected_code).execute()
