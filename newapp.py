@@ -2,6 +2,7 @@
 import datetime
 import secrets
 import string
+import io
 
 import pandas as pd
 import streamlit as st
@@ -34,118 +35,113 @@ IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 
 # ============================================================
 # COMPLETE STATION MASTER
-# Station names are retained internally for assembly-code
-# generation and lookup. The dropdown displays codes only.
-# Only the station code is saved in the existing stn_cd column.
 # ============================================================
 
 STATIONS = [
     # Maharashtra
-    {"name": "Roha", "code": "ROHA / RN", "state": "Maharashtra"},
-    {"name": "Kolad", "code": "KOL", "state": "Maharashtra"},
-    {"name": "Indapur", "code": "INP", "state": "Maharashtra"},
-    {"name": "Mangaon", "code": "MNI", "state": "Maharashtra"},
-    {"name": "Goregaon Road", "code": "GNO", "state": "Maharashtra"},
-    {"name": "Veer", "code": "VEER", "state": "Maharashtra"},
-    {"name": "Sape Wamane", "code": "SAPE", "state": "Maharashtra"},
-    {"name": "Karanjadi", "code": "KFD", "state": "Maharashtra"},
-    {"name": "Vinhere", "code": "VINH", "state": "Maharashtra"},
-    {"name": "Diwankhavati", "code": "DWV", "state": "Maharashtra"},
-    {"name": "Khed", "code": "KHED", "state": "Maharashtra"},
-    {"name": "Anjani", "code": "ANJ", "state": "Maharashtra"},
-    {"name": "Chiplun", "code": "CHI", "state": "Maharashtra"},
-    {"name": "Kamathe", "code": "KMT", "state": "Maharashtra"},
-    {"name": "Sawarda", "code": "SGR / SWA", "state": "Maharashtra"},
-    {"name": "Aravali Road", "code": "AVRD", "state": "Maharashtra"},
-    {"name": "Sangameshwar Road", "code": "SGR", "state": "Maharashtra"},
-    {"name": "Ratnagiri", "code": "RN", "state": "Maharashtra"},
-    {"name": "Nivasar", "code": "NVR", "state": "Maharashtra"},
-    {"name": "Adavali", "code": "ADVI", "state": "Maharashtra"},
-    {"name": "Vilavade", "code": "VID", "state": "Maharashtra"},
-    {"name": "Rajapur Road", "code": "RAJP", "state": "Maharashtra"},
-    {"name": "Vaibhavwadi Road", "code": "VBW", "state": "Maharashtra"},
-    {"name": "Nandgaon Road", "code": "NDD", "state": "Maharashtra"},
-    {"name": "Kankavali", "code": "KKW", "state": "Maharashtra"},
-    {"name": "Sindhudurg", "code": "SNDD", "state": "Maharashtra"},
-    {"name": "Kudal", "code": "KUDL", "state": "Maharashtra"},
-    {"name": "Zarap", "code": "ZARP", "state": "Maharashtra"},
-    {"name": "Sawantwadi Road", "code": "SWV", "state": "Maharashtra"},
-    {"name": "Madure", "code": "MADR", "state": "Maharashtra"},
+    {"name": "Roha", "code": "ROHA / RN"},
+    {"name": "Kolad", "code": "KOL"},
+    {"name": "Indapur", "code": "INP"},
+    {"name": "Mangaon", "code": "MNI"},
+    {"name": "Goregaon Road", "code": "GNO"},
+    {"name": "Veer", "code": "VEER"},
+    {"name": "Sape Wamane", "code": "SAPE"},
+    {"name": "Karanjadi", "code": "KFD"},
+    {"name": "Vinhere", "code": "VINH"},
+    {"name": "Diwankhavati", "code": "DWV"},
+    {"name": "Khed", "code": "KHED"},
+    {"name": "Anjani", "code": "ANJ"},
+    {"name": "Chiplun", "code": "CHI"},
+    {"name": "Kamathe", "code": "KMT"},
+    {"name": "Sawarda", "code": "SGR / SWA"},
+    {"name": "Aravali Road", "code": "AVRD"},
+    {"name": "Sangameshwar Road", "code": "SGR"},
+    {"name": "Ratnagiri", "code": "RN"},
+    {"name": "Nivasar", "code": "NVR"},
+    {"name": "Adavali", "code": "ADVI"},
+    {"name": "Vilavade", "code": "VID"},
+    {"name": "Rajapur Road", "code": "RAJP"},
+    {"name": "Vaibhavwadi Road", "code": "VBW"},
+    {"name": "Nandgaon Road", "code": "NDD"},
+    {"name": "Kankavali", "code": "KKW"},
+    {"name": "Sindhudurg", "code": "SNDD"},
+    {"name": "Kudal", "code": "KUDL"},
+    {"name": "Zarap", "code": "ZARP"},
+    {"name": "Sawantwadi Road", "code": "SWV"},
+    {"name": "Madure", "code": "MADR"},
 
     # Goa
-    {"name": "Pernem", "code": "PERN", "state": "Goa"},
-    {"name": "Thivim", "code": "THVM", "state": "Goa"},
-    {"name": "Karmali", "code": "KRMI", "state": "Goa"},
-    {"name": "Verna", "code": "VNA", "state": "Goa"},
-    {"name": "Madgaon Junction", "code": "MAO", "state": "Goa"},
-    {"name": "Suravali", "code": "SRI", "state": "Goa"},
-    {"name": "Majorda", "code": "MJO", "state": "Goa"},
-    {"name": "Balli", "code": "BLLI", "state": "Goa"},
-    {"name": "Canacona", "code": "CNO", "state": "Goa"},
-    {"name": "Loliem", "code": "LOL", "state": "Goa"},
+    {"name": "Pernem", "code": "PERN"},
+    {"name": "Thivim", "code": "THVM"},
+    {"name": "Karmali", "code": "KRMI"},
+    {"name": "Verna", "code": "VNA"},
+    {"name": "Madgaon Junction", "code": "MAO"},
+    {"name": "Suravali", "code": "SRI"},
+    {"name": "Majorda", "code": "MJO"},
+    {"name": "Balli", "code": "BLLI"},
+    {"name": "Canacona", "code": "CNO"},
+    {"name": "Loliem", "code": "LOL"},
 
     # Karnataka
-    {"name": "Asnoti", "code": "AT", "state": "Karnataka"},
-    {"name": "Karwar", "code": "KAWR", "state": "Karnataka"},
-    {"name": "Harwada", "code": "HVRD", "state": "Karnataka"},
-    {"name": "Ankola", "code": "ANKL", "state": "Karnataka"},
-    {"name": "Gokarna Road", "code": "GOK", "state": "Karnataka"},
-    {"name": "Kumta", "code": "KT", "state": "Karnataka"},
-    {"name": "Honnavar", "code": "HNA", "state": "Karnataka"},
-    {"name": "Manki", "code": "HIL", "state": "Karnataka"},
-    {"name": "Murdeshwar", "code": "MRDW", "state": "Karnataka"},
-    {"name": "Bhatkal", "code": "BTJL", "state": "Karnataka"},
-    {
-        "name": "Mookambika Road Byndoor (H)",
-        "code": "BYNR",
-        "state": "Karnataka",
-    },
-    {"name": "Bijoor", "code": "BJNR", "state": "Karnataka"},
-    {"name": "Senapura", "code": "SEN", "state": "Karnataka"},
-    {"name": "Kundapura", "code": "KUDA", "state": "Karnataka"},
-    {"name": "Barkur", "code": "BKJ", "state": "Karnataka"},
-    {"name": "Udupi", "code": "UD", "state": "Karnataka"},
-    {"name": "Innanje", "code": "INJ", "state": "Karnataka"},
-    {"name": "Padubidri", "code": "PUD", "state": "Karnataka"},
-    {"name": "Nandikoor", "code": "NDKD", "state": "Karnataka"},
-    {"name": "Mulki", "code": "MULK", "state": "Karnataka"},
-    {"name": "Surathkal", "code": "SLK", "state": "Karnataka"},
-    {"name": "Thokur", "code": "TKPK", "state": "Karnataka"},
+    {"name": "Asnoti", "code": "AT"},
+    {"name": "Karwar", "code": "KAWR"},
+    {"name": "Harwada", "code": "HVRD"},
+    {"name": "Ankola", "code": "ANKL"},
+    {"name": "Gokarna Road", "code": "GOK"},
+    {"name": "Kumta", "code": "KT"},
+    {"name": "Honnavar", "code": "HNA"},
+    {"name": "Manki", "code": "HIL"},
+    {"name": "Murdeshwar", "code": "MRDW"},
+    {"name": "Bhatkal", "code": "BTJL"},
+    {"name": "Mookambika Road Byndoor (H)", "code": "BYNR"},
+    {"name": "Bijoor", "code": "BJNR"},
+    {"name": "Senapura", "code": "SEN"},
+    {"name": "Kundapura", "code": "KUDA"},
+    {"name": "Barkur", "code": "BKJ"},
+    {"name": "Udupi", "code": "UD"},
+    {"name": "Innanje", "code": "INJ"},
+    {"name": "Padubidri", "code": "PUD"},
+    {"name": "Nandikoor", "code": "NDKD"},
+    {"name": "Mulki", "code": "MULK"},
+    {"name": "Surathkal", "code": "SLK"},
+    {"name": "Thokur", "code": "TKPK"},
 ]
 
 
 # ============================================================
-# STATION LOOKUP
+# STATION LOOKUP HELPERS
 # ============================================================
 
-def station_display(station):
-    """Display only the station code."""
-    return station["code"]
+def clean(value):
+    """Safely convert input to a trimmed string."""
+    if value is None:
+        return ""
+    return str(value).strip()
 
 
-# Use unique station codes in the dropdown.
-# The supplied station list contains some repeated codes.
-STATION_CODES = list(dict.fromkeys(
-    station["code"] for station in STATIONS
-))
+STATION_CODES = list(
+    dict.fromkeys(station["code"] for station in STATIONS)
+)
 
 
-def get_station_by_display(display):
-    """Return station details for a selected station code."""
+def generate_assembly_code(station_code):
+    """Generate a unique-looking assembly reference code."""
+    clean_station = station_code.split("/")[0].strip().upper()
+
+    random_suffix = "".join(
+        secrets.choice(string.ascii_uppercase + string.digits)
+        for _ in range(4)
+    )
+
+    return f"KRCL-{clean_station}-9T-{random_suffix}"
+
+
+def station_name_from_code(code):
+    """Find the station name associated with a station code."""
     for station in STATIONS:
-        if station["code"] == display:
-            return station
-
-    return None
-
-
-def get_station_details_by_code(code):
-    """Look up station details internally using its code."""
-    for station in STATIONS:
-        if station["code"] == clean(code):
-            return station
-
-    return None
+        if station["code"] == code:
+            return station["name"]
+    return "Unknown"
 
 
 # ============================================================
@@ -162,17 +158,101 @@ def get_supabase():
 
 try:
     supabase = get_supabase()
-
 except Exception as exc:
-    st.error(
-        "Supabase connection failed. "
-        "Check your Streamlit Secrets configuration."
+    st.error("Unable to connect to Supabase.")
+    st.caption(
+        "Check the Supabase credentials in your Streamlit secrets."
     )
-
-    with st.expander("Connection details"):
+    with st.expander("Technical details"):
         st.code(str(exc))
-
     st.stop()
+
+
+# ============================================================
+# DATABASE HELPERS
+# ============================================================
+
+def fetch_all_records(table_name, page_size=1000, max_pages=100):
+    """
+    Fetch records in pages.
+
+    Returns records collected from the accessible rows.
+    The maximum scan is page_size * max_pages records.
+    """
+    records = []
+
+    for page in range(max_pages):
+        start = page * page_size
+        end = start + page_size - 1
+
+        response = (
+            supabase.table(table_name)
+            .select("*")
+            .range(start, end)
+            .execute()
+        )
+
+        batch = response.data or []
+        records.extend(batch)
+
+        if len(batch) < page_size:
+            break
+
+    return records
+
+
+def dataframe_from_records(records):
+    """Convert database records into a display-friendly DataFrame."""
+    if not records:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(records)
+
+    # Convert timezone-aware timestamps to readable strings.
+    for column in df.columns:
+        if (
+            pd.api.types.is_datetime64_any_dtype(df[column])
+            or column.lower() in {
+                "created_at",
+                "updated_at",
+                "timestamp",
+                "date",
+                "datetime",
+            }
+        ):
+            try:
+                df[column] = df[column].astype(str)
+            except Exception:
+                pass
+
+    return df
+
+
+def export_to_excel(dataframe):
+    """Create an Excel workbook in memory."""
+    output = io.BytesIO()
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        dataframe.to_excel(
+            writer,
+            index=False,
+            sheet_name="Records",
+        )
+
+    output.seek(0)
+    return output.getvalue()
+
+
+def export_to_csv(dataframe):
+    """Create CSV data in memory."""
+    return dataframe.to_csv(index=False).encode("utf-8-sig")
+
+
+def show_database_error(title, exc):
+    st.error(title)
+
+    with st.expander("Technical details", expanded=True):
+        st.code(str(exc))
 
 
 # ============================================================
@@ -183,17 +263,16 @@ st.markdown(
     """
     <style>
     .block-container {
-        max-width: 1100px;
+        max-width: 1250px;
         padding-top: 1.2rem;
-        padding-bottom: 3rem;
+        padding-bottom: 2rem;
     }
 
     .page-title {
         text-align: center;
-        font-size: 24px;
+        font-size: 26px;
         font-weight: 750;
         color: #172033;
-        margin-bottom: 2px;
     }
 
     .page-subtitle {
@@ -214,32 +293,25 @@ st.markdown(
     .field-label-en {
         font-size: 12px;
         color: #667085;
+        margin-top: -4px;
         margin-bottom: 6px;
-    }
-
-    div.stButton > button {
-        min-height: 40px;
-        border-radius: 7px;
-        font-weight: 600;
     }
 
     div[data-testid="stFormSubmitButton"] button {
         min-height: 43px;
-        border-radius: 7px;
         background-color: #0ba779;
-        border: 0;
         color: white;
         font-weight: 700;
+        width: 100%;
+        border: 0;
+        border-radius: 7px;
     }
 
-    div[data-testid="stFormSubmitButton"] button:hover {
-        background-color: #07845f;
-        color: white;
-    }
-
-    div[data-testid="stDataFrame"] {
-        border: 1px solid #e1e7ef;
-        border-radius: 8px;
+    div[data-testid="stMetric"] {
+        background: #f8fafc;
+        border: 1px solid #eaecf0;
+        padding: 12px;
+        border-radius: 10px;
     }
     </style>
     """,
@@ -247,1020 +319,601 @@ st.markdown(
 )
 
 
-# ============================================================
-# COMMON HELPERS
-# ============================================================
-
-def label(hindi, english):
-    st.markdown(
-        f'<div class="field-label-hi">{hindi}</div>'
-        f'<div class="field-label-en">{english}</div>',
-        unsafe_allow_html=True,
-    )
-
-
-def heading(hindi, english):
-    st.markdown(
-        f'<div class="page-title">{hindi}</div>'
-        f'<div class="page-subtitle">{english}</div>',
-        unsafe_allow_html=True,
-    )
-
-
-def clean(value):
-    return "" if value is None else str(value).strip()
-
-
-def show_db_error(message, exc):
-    st.error(message)
-
-    with st.expander("Technical details"):
-        st.code(str(exc))
-
-
-def get_assemblies():
-    response = (
-        supabase.table(ASSEMBLY_TABLE)
-        .select("*")
-        .order("ia_code")
-        .limit(1000)
-        .execute()
-    )
-
-    return response.data or []
-
-
-def get_transactions():
-    response = (
-        supabase.table(TRANSACTION_TABLE)
-        .select("*")
-        .order("timestamp", desc=True)
-        .limit(1000)
-        .execute()
-    )
-
-    return response.data or []
-
-
-def assembly_codes():
-    return sorted({
-        clean(row.get("ia_code"))
-        for row in get_assemblies()
-        if clean(row.get("ia_code"))
-    })
-
-
-def station_codes():
-    """Return station codes already present in the assembly master."""
-    return sorted({
-        clean(row.get("stn_cd"))
-        for row in get_assemblies()
-        if clean(row.get("stn_cd"))
-    })
-
-
-def generate_assembly_code(station):
-    station = "".join(
-        ch for ch in clean(station).upper() if ch.isalnum()
-    ) or "KRCL"
-
-    date_part = datetime.datetime.now(IST).strftime("%Y%m%d")
-
-    suffix = "".join(
-        secrets.choice(string.ascii_uppercase + string.digits)
-        for _ in range(6)
-    )
-
-    return f"IA-{station[:8]}-{date_part}-{suffix}"
-
-
-def record_label(record):
+def label(hindi_text, english_text):
     return (
-        f"{clean(record.get('ia_code'))} | "
-        f"{clean(record.get('date'))} | "
-        f"{clean(record.get('timestamp'))}"
+        f'<div><p class="field-label-hi">{hindi_text}</p>'
+        f'<p class="field-label-en">{english_text}</p></div>'
     )
 
 
 # ============================================================
-# APP HEADER AND TWO MAIN MODULES
+# PAGE HEADER
 # ============================================================
 
-st.title("KRCL | Inspection Management System")
-
-st.caption(
-    "Insulator Assembly Master • Transaction / Inspection Records"
-)
-
-main_module = st.radio(
-    "Choose module",
-    [
-        "Insulator Assembly Master",
-        "Transaction / Inspection Records",
-    ],
-    horizontal=True,
-    key="main_module",
-)
-
-st.divider()
-
-
-# ============================================================
-# MODULE 1: INSULATOR ASSEMBLY MASTER
-# ============================================================
-
-if main_module == "Insulator Assembly Master":
-
-    master_action = st.radio(
-        "Assembly Master",
-        ["➕ Add", "📋 View"],
-        horizontal=True,
-        key="master_action",
+def show_header():
+    st.markdown(
+        '<p class="page-title">'
+        'कोंकण रेलवे कॉर्पोरेशन लिमिटेड'
+        '</p>',
+        unsafe_allow_html=True,
     )
 
-    st.divider()
+    st.markdown(
+        '<p class="page-subtitle">'
+        'Assembly & Inspection Management System'
+        '</p>',
+        unsafe_allow_html=True,
+    )
 
-    # --------------------------------------------------------
-    # MASTER: ADD
-    # --------------------------------------------------------
 
-    if master_action == "➕ Add":
+# ============================================================
+# ASSEMBLY REGISTRATION FORM
+# ============================================================
 
-        heading(
-            "इंसुलेटर असेंबली मास्टर",
-            "Insulator Assembly Master",
-        )
+def assembly_registration():
+    st.subheader("📝 Register New Assembly")
 
-        st.info(
-            f"Station directory loaded: {len(STATIONS)} stations "
-            "across Maharashtra, Goa, and Karnataka."
-        )
+    st.info(
+        "Enter the assembly details below. "
+        "A generated assembly code will be saved to Supabase."
+    )
 
-        with st.form("assembly_add_form", clear_on_submit=False):
+    with st.form("assembly_form", clear_on_submit=False):
 
-            # STATION DETAILS
+        # Row 1
+        col1, col2, col3 = st.columns(3)
 
-            st.markdown("### Station Details")
-
-            c1, c2 = st.columns(2)
-
-            with c1:
-                label("स्टेशन कोड", "Station Code")
-
-                station_choice = st.selectbox(
-                    "Station Code",
-                    [STATION_PLACEHOLDER] + STATION_CODES,
-                    label_visibility="collapsed",
-                )
-
-            selected_station = get_station_by_display(station_choice)
-
-            with c2:
-                label("राज्य", "State")
-
-                st.text_input(
-                    "State",
-                    value=(
-                        selected_station["state"]
-                        if selected_station
-                        else ""
-                    ),
-                    disabled=True,
-                    label_visibility="collapsed",
-                )
-
-            # LOCATION DETAILS
-
-            c3, c4 = st.columns(2)
-
-            with c3:
-                label("लोकेशन के बीच", "Location Between")
-
-                loc_bet = st.text_input(
-                    "Location Between",
-                    max_chars=30,
-                    label_visibility="collapsed",
-                )
-
-            with c4:
-                label(
-                    "एल्बो-टू-सेक्शन के बीच",
-                    "Elbow-to-Section Between",
-                )
-
-                es_bet = st.text_input(
-                    "Elbow-to-Section Between",
-                    max_chars=30,
-                    label_visibility="collapsed",
-                )
-
-            # ASSEMBLY DETAILS
-
-            st.markdown("### Assembly Details")
-
-            c5, c6, c7 = st.columns(3)
-
-            with c5:
+        with col1:
+            st.markdown(
                 label(
                     "इंसुलेटर का मेक (9-टन)",
                     "Make Insulator (9-ton)",
-                )
+                ),
+                unsafe_allow_html=True,
+            )
 
-                make_9 = st.text_input(
-                    "Make Insulator 9-ton",
-                    max_chars=30,
-                    label_visibility="collapsed",
-                )
+            make_9t = st.text_input(
+                "make_9t_input",
+                placeholder="Enter make",
+                label_visibility="collapsed",
+            )
 
-            with c6:
+        with col2:
+            st.markdown(
                 label(
                     "इंसुलेटर का मेक स्थिति",
                     "Make Insulator Status",
-                )
-
-                make_s = st.text_input(
-                    "Make Insulator Status",
-                    max_chars=20,
-                    label_visibility="collapsed",
-                )
-
-            with c7:
-                label("स्थिति", "Status")
-
-                status = st.selectbox(
-                    "Status",
-                    ["Active", "Inactive"],
-                    label_visibility="collapsed",
-                )
-
-            st.markdown("### Assembly Code")
-
-            st.caption(
-                "The assembly code is generated automatically "
-                "when the form is submitted."
+                ),
+                unsafe_allow_html=True,
             )
 
-            # BUTTON
-
-            submitted = st.form_submit_button(
-                "Generate and Save Assembly",
-                use_container_width=True,
+            make_status = st.text_input(
+                "make_status_input",
+                placeholder="Enter make status",
+                label_visibility="collapsed",
             )
 
-        # PROCESS FORM SUBMISSION
+        with col3:
+            st.markdown(
+                label("स्थिति", "Status"),
+                unsafe_allow_html=True,
+            )
 
-        if submitted:
+            status = st.selectbox(
+                "status_input",
+                options=["Active", "Inactive"],
+                label_visibility="collapsed",
+            )
 
-            if not selected_station:
-                st.error("Please select a valid station code.")
+        st.divider()
+        st.markdown("### 📍 Location Parameters")
 
-            elif not loc_bet.strip():
-                st.error("Please enter Location Between.")
+        # Row 2
+        col_stn, col_loc, col_es = st.columns(3)
 
-            elif not es_bet.strip():
-                st.error("Please enter Elbow-to-Section Between.")
+        with col_stn:
+            st.markdown(
+                label(
+                    "स्टेशन कोड चुनें",
+                    "Select Station Code",
+                ),
+                unsafe_allow_html=True,
+            )
 
-            elif not make_9.strip():
-                st.error("Please enter Make Insulator (9-ton).")
+            selected_stn = st.selectbox(
+                "stn_routing",
+                options=[STATION_PLACEHOLDER] + STATION_CODES,
+                label_visibility="collapsed",
+            )
 
-            elif not make_s.strip():
-                st.error("Please enter Make Insulator Status.")
+        with col_loc:
+            st.markdown(
+                label(
+                    "लोकेशन के बीच",
+                    "Location Between (loc_bet)",
+                ),
+                unsafe_allow_html=True,
+            )
 
-            else:
+            loc_bet = st.text_input(
+                "loc_bet_input",
+                placeholder="e.g. Km 42/1-3",
+                label_visibility="collapsed",
+            )
 
-                # Use the station name internally for assembly-code
-                # generation. Only the station code is stored.
-                new_assembly_code = generate_assembly_code(
-                    selected_station["name"]
-                )
+        with col_es:
+            st.markdown(
+                label(
+                    "एस्केप / स्टेशन के बीच",
+                    "ES Between (es_bet)",
+                ),
+                unsafe_allow_html=True,
+            )
 
-                payload = {
-                    "ia_code": new_assembly_code,
-                    "stn_cd": selected_station["code"],
-                    "loc_bet": loc_bet.strip(),
-                    "es_bet": es_bet.strip(),
-                    "make_9": make_9.strip(),
-                    "make_s": make_s.strip(),
-                    "status": status,
-                }
+            es_bet = st.text_input(
+                "es_bet_input",
+                placeholder="e.g. ES1-ES2",
+                label_visibility="collapsed",
+            )
 
-                try:
-                    result = (
-                        supabase.table(ASSEMBLY_TABLE)
-                        .insert(payload)
-                        .execute()
-                    )
-
-                    if result.data:
-                        st.success("Assembly saved successfully.")
-
-                        st.code(
-                            f"Assembly Code: {new_assembly_code}\n"
-                            f"Station Code: {selected_station['code']}"
-                        )
-
-                    else:
-                        st.warning(
-                            "No inserted record was returned. "
-                            "Please check database permissions."
-                        )
-
-                except Exception as exc:
-                    show_db_error(
-                        "Unable to save assembly.",
-                        exc,
-                    )
-
-    # --------------------------------------------------------
-    # MASTER: VIEW
-    # --------------------------------------------------------
-
-    else:
-
-        heading(
-            "इंसुलेटर असेंबली रिकॉर्ड",
-            "Insulator Assembly Master Records",
+        submitted = st.form_submit_button(
+            "Generate and Save Assembly",
+            use_container_width=True,
         )
 
-        col_refresh, col_filter = st.columns([1, 2])
+    if submitted:
 
-        with col_refresh:
-            if st.button(
-                "🔄 Refresh Assemblies",
-                use_container_width=True,
-            ):
-                st.rerun()
+        # Validation
+        if selected_stn == STATION_PLACEHOLDER:
+            st.error("Please choose a valid station code.")
+            return
 
-        try:
-            rows = get_assemblies()
+        if not clean(make_9t):
+            st.error("Please enter Make Insulator (9-ton).")
+            return
 
-            if not rows:
-                st.info("No assembly records found.")
+        if not clean(make_status):
+            st.error("Please enter Make Insulator Status.")
+            return
 
-            else:
-                df = pd.DataFrame(rows)
+        if not clean(loc_bet):
+            st.error("Please enter Location Between (loc_bet).")
+            return
 
-                with col_filter:
+        if not clean(es_bet):
+            st.error("Please enter ES Between (es_bet).")
+            return
 
-                    filters = ["All Stations"]
+        short_station_code = selected_stn.split("/")[0].strip()
 
-                    if "stn_cd" in df.columns:
-                        filters += sorted(
-                            df["stn_cd"]
-                            .fillna("")
-                            .astype(str)
-                            .str.strip()
-                            .unique()
-                            .tolist()
-                        )
+        # Generate a code and retry if a duplicate is found.
+        generated_code = None
+        saved = False
 
-                    chosen_station = st.selectbox(
-                        "Filter by station code",
-                        filters,
-                    )
+        for attempt in range(5):
+            candidate = generate_assembly_code(selected_stn)
 
+            payload = {
+                "ia_code": candidate,
+                "stn_cd": short_station_code,
+                "make_9": clean(make_9t),
+                "loc_bet": clean(loc_bet),
+                "es_bet": clean(es_bet),
+                "status": status,
+                "make_status": clean(make_status),
+            }
+
+            try:
+                response = (
+                    supabase.table(ASSEMBLY_TABLE)
+                    .insert(payload)
+                    .execute()
+                )
+
+                if response.data:
+                    generated_code = candidate
+                    saved = True
+                    break
+
+                st.error(
+                    "Supabase did not confirm the assembly insertion."
+                )
+                return
+
+            except Exception as exc:
+                error_text = str(exc).lower()
+
+                # Retry only when the database reports a duplicate.
                 if (
-                    chosen_station != "All Stations"
-                    and "stn_cd" in df.columns
+                    "duplicate key" in error_text
+                    or "23505" in error_text
+                    or "unique constraint" in error_text
                 ):
-                    df = df[
-                        df["stn_cd"]
-                        .fillna("")
-                        .astype(str)
-                        .str.strip()
-                        == chosen_station
-                    ]
+                    continue
 
-                # Do not add station_name or station_state columns.
-                # Show only fields returned by the existing table.
-
-                st.success(f"{len(df)} assembly record(s)")
-
-                st.dataframe(
-                    df,
-                    use_container_width=True,
-                    hide_index=True,
+                show_database_error(
+                    "Unable to save assembly. "
+                    "Check the table schema and permissions.",
+                    exc,
                 )
+                return
 
-                st.download_button(
-                    "⬇️ Download Assembly Records CSV",
-                    data=df.to_csv(index=False).encode("utf-8"),
-                    file_name="assembly_master.csv",
-                    mime="text/csv",
-                )
+        if saved:
+            st.success("Assembly successfully saved!")
+            st.markdown(
+                f"**Generated Assembly Code:** `{generated_code}`"
+            )
+            st.markdown(
+                f"**Station:** {station_name_from_code(selected_stn)} "
+                f"({short_station_code})"
+            )
+            st.balloons()
 
-        except Exception as exc:
-            show_db_error(
-                "Unable to retrieve assembly records.",
-                exc,
+        else:
+            st.error(
+                "Could not generate a unique assembly code after "
+                "multiple attempts. Please try again."
             )
 
 
 # ============================================================
-# MODULE 2: TRANSACTION / INSPECTION RECORDS
+# ASSEMBLY DATABASE DASHBOARD
 # ============================================================
 
-else:
+def assembly_dashboard():
+    st.subheader("📊 Saved Assembly Records")
 
-    transaction_action = st.radio(
-        "Transaction",
-        [
-            "➕ New Inspection",
-            "📚 View Records",
-            "✏️ Modify",
+    st.caption(
+        "View, search, filter and export assemblies stored "
+        "in the emm_ins_asmbly table."
+    )
+
+    if st.button(
+        "🔄 Refresh Assembly Records",
+        key="refresh_assemblies",
+    ):
+        st.cache_data.clear()
+        st.rerun()
+
+    try:
+        with st.spinner("Loading assembly records..."):
+            records = fetch_all_records(ASSEMBLY_TABLE)
+
+        if not records:
+            st.warning(
+                "No assembly records were returned. "
+                "The table may be empty, or your database permissions "
+                "may restrict access."
+            )
+            return
+
+        df = dataframe_from_records(records)
+
+        # Metrics
+        total = len(df)
+
+        if "status" in df.columns:
+            active_count = (
+                df["status"]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+                .eq("active")
+                .sum()
+            )
+
+            inactive_count = (
+                df["status"]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+                .eq("inactive")
+                .sum()
+            )
+        else:
+            active_count = 0
+            inactive_count = 0
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Records Loaded", total)
+        c2.metric("Active Assemblies", int(active_count))
+        c3.metric("Inactive Assemblies", int(inactive_count))
+
+        st.divider()
+        st.markdown("### 🔎 Search and Filters")
+
+        # Search
+        search_text = st.text_input(
+            "Search assembly records",
+            placeholder=(
+                "Search assembly code, station code, "
+                "location or any displayed field..."
+            ),
+            key="assembly_search",
+        )
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if "stn_cd" in df.columns:
+                station_options = sorted(
+                    df["stn_cd"]
+                    .dropna()
+                    .astype(str)
+                    .unique()
+                    .tolist()
+                )
+            else:
+                station_options = []
+
+            selected_stations = st.multiselect(
+                "Filter by station code",
+                options=station_options,
+                key="assembly_station_filter",
+            )
+
+        with col2:
+            if "status" in df.columns:
+                status_options = sorted(
+                    df["status"]
+                    .dropna()
+                    .astype(str)
+                    .unique()
+                    .tolist()
+                )
+            else:
+                status_options = []
+
+            selected_statuses = st.multiselect(
+                "Filter by status",
+                options=status_options,
+                key="assembly_status_filter",
+            )
+
+        filtered_df = df.copy()
+
+        # Apply station filter
+        if selected_stations and "stn_cd" in filtered_df.columns:
+            filtered_df = filtered_df[
+                filtered_df["stn_cd"].astype(str).isin(
+                    selected_stations
+                )
+            ]
+
+        # Apply status filter
+        if selected_statuses and "status" in filtered_df.columns:
+            filtered_df = filtered_df[
+                filtered_df["status"].astype(str).isin(
+                    selected_statuses
+                )
+            ]
+
+        # Search across all available columns
+        if search_text.strip():
+            mask = filtered_df.apply(
+                lambda column: column.astype(str).str.contains(
+                    search_text.strip(),
+                    case=False,
+                    na=False,
+                    regex=False,
+                )
+            ).any(axis=1)
+
+            filtered_df = filtered_df[mask]
+
+        st.markdown(
+            f"**Matching records:** {len(filtered_df)}"
+        )
+
+        st.dataframe(
+            filtered_df,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        # Export buttons
+        st.markdown("### 📥 Export Records")
+
+        exp1, exp2 = st.columns(2)
+
+        with exp1:
+            st.download_button(
+                "Download CSV",
+                data=export_to_csv(filtered_df),
+                file_name="krcl_assembly_records.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+
+        with exp2:
+            try:
+                excel_data = export_to_excel(filtered_df)
+
+                st.download_button(
+                    "Download Excel",
+                    data=excel_data,
+                    file_name="krcl_assembly_records.xlsx",
+                    mime=(
+                        "application/vnd.openxmlformats-officedocument."
+                        "spreadsheetml.sheet"
+                    ),
+                    use_container_width=True,
+                )
+
+            except Exception as exc:
+                st.warning(
+                    "Excel export is unavailable. "
+                    "Install openpyxl to enable it."
+                )
+
+                with st.expander("Technical details"):
+                    st.code(str(exc))
+
+    except Exception as exc:
+        show_database_error(
+            "Could not retrieve assembly records.",
+            exc,
+        )
+
+
+# ============================================================
+# MAINTENANCE TRANSACTION LOOKUP
+# ============================================================
+
+def transaction_dashboard():
+    st.subheader("🛠️ Maintenance Transaction Records")
+
+    st.caption(
+        "Read-only lookup of records from the emt_ia_maintain table."
+    )
+
+    if st.button(
+        "🔄 Refresh Maintenance Records",
+        key="refresh_transactions",
+    ):
+        st.cache_data.clear()
+        st.rerun()
+
+    try:
+        with st.spinner("Loading maintenance transactions..."):
+            records = fetch_all_records(TRANSACTION_TABLE)
+
+        if not records:
+            st.warning(
+                "No maintenance transaction records were returned. "
+                "The table may be empty, or your database permissions "
+                "may restrict access."
+            )
+            return
+
+        df = dataframe_from_records(records)
+
+        st.metric("Transaction Records Loaded", len(df))
+
+        st.markdown("### 🔎 Search Transactions")
+
+        search_text = st.text_input(
+            "Search maintenance records",
+            placeholder=(
+                "Enter an assembly code, transaction ID, "
+                "station code or another known value..."
+            ),
+            key="transaction_search",
+        )
+
+        filtered_df = df.copy()
+
+        if search_text.strip():
+            mask = filtered_df.apply(
+                lambda column: column.astype(str).str.contains(
+                    search_text.strip(),
+                    case=False,
+                    na=False,
+                    regex=False,
+                )
+            ).any(axis=1)
+
+            filtered_df = filtered_df[mask]
+
+        st.markdown(
+            f"**Matching transactions:** {len(filtered_df)}"
+        )
+
+        st.dataframe(
+            filtered_df,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        st.markdown("### 📥 Export Transactions")
+
+        exp1, exp2 = st.columns(2)
+
+        with exp1:
+            st.download_button(
+                "Download CSV",
+                data=export_to_csv(filtered_df),
+                file_name="krcl_maintenance_transactions.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+
+        with exp2:
+            try:
+                excel_data = export_to_excel(filtered_df)
+
+                st.download_button(
+                    "Download Excel",
+                    data=excel_data,
+                    file_name="krcl_maintenance_transactions.xlsx",
+                    mime=(
+                        "application/vnd.openxmlformats-officedocument."
+                        "spreadsheetml.sheet"
+                    ),
+                    use_container_width=True,
+                )
+
+            except Exception as exc:
+                st.warning(
+                    "Excel export is unavailable. "
+                    "Install openpyxl to enable it."
+                )
+
+                with st.expander("Technical details"):
+                    st.code(str(exc))
+
+    except Exception as exc:
+        show_database_error(
+            "Could not retrieve maintenance transaction records.",
+            exc,
+        )
+
+
+# ============================================================
+# APPLICATION NAVIGATION
+# ============================================================
+
+def main():
+    show_header()
+
+    st.markdown(
+        """
+        Use the navigation below to register assemblies,
+        view existing records, or search maintenance transactions.
+        """
+    )
+
+    page = st.radio(
+        "Application Navigation",
+        options=[
+            "Register Assembly",
+            "Assembly Database",
+            "Maintenance Transactions",
         ],
         horizontal=True,
-        key="transaction_action",
+        label_visibility="collapsed",
     )
 
     st.divider()
 
-    # --------------------------------------------------------
-    # TRANSACTION: NEW INSPECTION
-    # --------------------------------------------------------
+    if page == "Register Assembly":
+        assembly_registration()
 
-    if transaction_action == "➕ New Inspection":
+    elif page == "Assembly Database":
+        assembly_dashboard()
 
-        heading(
-            "निरीक्षण रिकॉर्ड जोड़ें",
-            "Add Inspection Record",
-        )
+    elif page == "Maintenance Transactions":
+        transaction_dashboard()
 
-        try:
-            codes = assembly_codes()
+    st.divider()
 
-        except Exception as exc:
-            show_db_error(
-                "Unable to load assembly codes.",
-                exc,
-            )
-            codes = []
+    st.caption(
+        "Konkan Railway Corporation Limited | "
+        "Assembly & Inspection Management System"
+    )
 
-        if not codes:
 
-            st.warning(
-                "No assembly codes found. Open Insulator Assembly "
-                "Master and add an assembly before creating an "
-                "inspection record."
-            )
+if __name__ == "__main__":
+    main()
 
-        else:
-
-            with st.form(
-                "new_inspection_form",
-                clear_on_submit=False,
-            ):
-
-                c1, c2 = st.columns(2)
-
-                with c1:
-                    label(
-                        "सिलेक्ट इंसुलेटर असेंबली",
-                        "Select Insulator Assembly",
-                    )
-
-                    ia_code = st.selectbox(
-                        "Assembly",
-                        [PLACEHOLDER] + codes,
-                        label_visibility="collapsed",
-                    )
-
-                with c2:
-                    label("तारीख", "Inspection Date")
-
-                    inspection_date = st.date_input(
-                        "Inspection Date",
-                        value=datetime.datetime.now(IST).date(),
-                        label_visibility="collapsed",
-                    )
-
-                # Load station code from the selected assembly.
-                assembly_rows = get_assemblies()
-
-                selected_assembly = next(
-                    (
-                        row
-                        for row in assembly_rows
-                        if clean(row.get("ia_code")) == ia_code
-                    ),
-                    {},
-                )
-
-                station_code = clean(
-                    selected_assembly.get("stn_cd")
-                )
-
-                if ia_code != PLACEHOLDER:
-                    st.info(
-                        f"Station Code: "
-                        f"{station_code or 'Not recorded'}"
-                    )
-
-                st.markdown("#### Measurements")
-
-                c3, c4, c5 = st.columns(3)
-
-                with c3:
-                    label(
-                        "कॉन्टैक्ट वायर हाइट (मिमी)",
-                        "Contact Wire Height (mm)",
-                    )
-
-                    c_w_ht = st.number_input(
-                        "Contact Wire Height",
-                        min_value=0,
-                        step=1,
-                        value=0,
-                        label_visibility="collapsed",
-                    )
-
-                with c4:
-                    label(
-                        "एनकम्ब्रन्स (मिमी)",
-                        "Encumbrance (mm)",
-                    )
-
-                    encum = st.number_input(
-                        "Encumbrance",
-                        min_value=0,
-                        step=1,
-                        value=0,
-                        label_visibility="collapsed",
-                    )
-
-                with c5:
-                    label(
-                        "रनर गैप (मिमी)",
-                        "Runner Gap (mm)",
-                    )
-
-                    run_gap = st.number_input(
-                        "Runner Gap",
-                        min_value=0,
-                        step=1,
-                        value=0,
-                        label_visibility="collapsed",
-                    )
-
-                st.markdown("#### Observations and Remarks")
-
-                c6, c7, c8 = st.columns(3)
-
-                with c6:
-                    label(
-                        "ऑब्जर्वेशन",
-                        "Observation Details",
-                    )
-
-                    observation = st.text_area(
-                        "Observation",
-                        max_chars=100,
-                        height=100,
-                        label_visibility="collapsed",
-                    )
-
-                with c7:
-                    label(
-                        "किये गये कार्य का विवरण",
-                        "Description / Work Done",
-                    )
-
-                    description = st.text_area(
-                        "Description",
-                        max_chars=100,
-                        height=100,
-                        label_visibility="collapsed",
-                    )
-
-                with c8:
-                    label(
-                        "टिप्पणी",
-                        "Additional Remarks",
-                    )
-
-                    remarks = st.text_area(
-                        "Remarks",
-                        max_chars=100,
-                        height=100,
-                        label_visibility="collapsed",
-                    )
-
-                submitted = st.form_submit_button(
-                    "Save Inspection Record",
-                    use_container_width=True,
-                )
-
-            if submitted:
-
-                if ia_code == PLACEHOLDER:
-
-                    st.error(
-                        "Please select an Insulator Assembly."
-                    )
-
-                else:
-
-                    payload = {
-                        "ia_code": ia_code,
-                        "date": inspection_date.isoformat(),
-                        "c_w_ht": int(c_w_ht),
-                        "encum": int(encum),
-                        "run_gap": int(run_gap),
-                        "observation": observation.strip(),
-                        "description": description.strip(),
-                        "remarks": remarks.strip(),
-                        "user_id": USER_ID,
-                        "timestamp": datetime.datetime.now(
-                            datetime.timezone.utc
-                        ).isoformat(),
-                        "sup_emp_no": SUPERVISOR_NUMBER,
-                        "sup_emp_name": SUPERVISOR_NAME,
-                    }
-
-                    try:
-
-                        result = (
-                            supabase.table(TRANSACTION_TABLE)
-                            .insert(payload)
-                            .execute()
-                        )
-
-                        if result.data:
-
-                            st.success(
-                                "Inspection record saved successfully."
-                            )
-
-                        else:
-
-                            st.warning(
-                                "No inserted record was returned. "
-                                "Check database permissions."
-                            )
-
-                    except Exception as exc:
-
-                        show_db_error(
-                            "Unable to save inspection record.",
-                            exc,
-                        )
-
-    # --------------------------------------------------------
-    # TRANSACTION: VIEW RECORDS
-    # --------------------------------------------------------
-
-    elif transaction_action == "📚 View Records":
-
-        heading(
-            "ऐतिहासिक निरीक्षण रिकॉर्ड",
-            "Historical Inspection Records",
-        )
-
-        col_search, col_refresh = st.columns([3, 1])
-
-        with col_search:
-
-            search = st.text_input(
-                "Search by Assembly Code",
-                placeholder="Enter assembly code...",
-            ).strip().lower()
-
-        with col_refresh:
-
-            st.write("")
-
-            if st.button(
-                "🔄 Refresh",
-                use_container_width=True,
-            ):
-                st.rerun()
-
-        try:
-
-            rows = get_transactions()
-
-            if not rows:
-
-                st.info("No inspection records found.")
-
-            else:
-
-                df = pd.DataFrame(rows)
-
-                if search:
-
-                    df = df[
-                        df["ia_code"]
-                        .fillna("")
-                        .astype(str)
-                        .str.strip()
-                        .str.lower()
-                        .str.contains(search, regex=False)
-                    ]
-
-                # Do not add station_name or station_state columns.
-                # Station code remains available in the assembly master.
-
-                st.success(
-                    f"{len(df)} inspection record(s) found."
-                )
-
-                st.dataframe(
-                    df,
-                    use_container_width=True,
-                    hide_index=True,
-                )
-
-                st.download_button(
-                    "⬇️ Download Inspection Records CSV",
-                    data=df.to_csv(index=False).encode("utf-8"),
-                    file_name=(
-                        "inspection_records_"
-                        + datetime.date.today().isoformat()
-                        + ".csv"
-                    ),
-                    mime="text/csv",
-                )
-
-        except Exception as exc:
-
-            show_db_error(
-                "Unable to retrieve inspection records.",
-                exc,
-            )
-
-    # --------------------------------------------------------
-    # TRANSACTION: MODIFY
-    # --------------------------------------------------------
-
-    else:
-
-        heading(
-            "निरीक्षण रिकॉर्ड संशोधित करें",
-            "Modify Inspection Record",
-        )
-
-        try:
-            rows = get_transactions()
-
-        except Exception as exc:
-            show_db_error(
-                "Unable to load inspection records.",
-                exc,
-            )
-            rows = []
-
-        if not rows:
-
-            st.info(
-                "No inspection records are available to modify."
-            )
-
-        else:
-
-            options = {}
-
-            for index, row in enumerate(rows):
-
-                key = record_label(row)
-
-                if key in options:
-                    key = f"{key} | row {index + 1}"
-
-                options[key] = row
-
-            selected_key = st.selectbox(
-                "Select inspection record",
-                list(options.keys()),
-            )
-
-            record = options[selected_key]
-
-            st.info(
-                "The assembly code cannot be changed here. "
-                "The selected record is matched using assembly "
-                "code and timestamp."
-            )
-
-            try:
-
-                current_date = datetime.date.fromisoformat(
-                    clean(record.get("date"))[:10]
-                )
-
-            except (ValueError, TypeError):
-
-                current_date = datetime.datetime.now(IST).date()
-
-            try:
-
-                current_cw = int(record.get("c_w_ht") or 0)
-                current_encum = int(record.get("encum") or 0)
-                current_gap = int(record.get("run_gap") or 0)
-
-            except (TypeError, ValueError):
-
-                current_cw, current_encum, current_gap = 0, 0, 0
-
-            with st.form("modify_inspection_form"):
-
-                c1, c2 = st.columns(2)
-
-                with c1:
-
-                    label(
-                        "इंसुलेटर असेंबली कोड",
-                        "Insulator Assembly Code",
-                    )
-
-                    st.text_input(
-                        "Assembly Code",
-                        value=clean(record.get("ia_code")),
-                        disabled=True,
-                        label_visibility="collapsed",
-                    )
-
-                with c2:
-
-                    label("तारीख", "Inspection Date")
-
-                    new_date = st.date_input(
-                        "Inspection Date",
-                        value=current_date,
-                        label_visibility="collapsed",
-                    )
-
-                c3, c4, c5 = st.columns(3)
-
-                with c3:
-
-                    label(
-                        "कॉन्टैक्ट वायर हाइट (मिमी)",
-                        "Contact Wire Height (mm)",
-                    )
-
-                    new_cw = st.number_input(
-                        "Contact Wire Height",
-                        min_value=0,
-                        value=current_cw,
-                        step=1,
-                        label_visibility="collapsed",
-                    )
-
-                with c4:
-
-                    label(
-                        "एनकम्ब्रन्स (मिमी)",
-                        "Encumbrance (mm)",
-                    )
-
-                    new_encum = st.number_input(
-                        "Encumbrance",
-                        min_value=0,
-                        value=current_encum,
-                        step=1,
-                        label_visibility="collapsed",
-                    )
-
-                with c5:
-
-                    label(
-                        "रनर गैप (मिमी)",
-                        "Runner Gap (mm)",
-                    )
-
-                    new_gap = st.number_input(
-                        "Runner Gap",
-                        min_value=0,
-                        value=current_gap,
-                        step=1,
-                        label_visibility="collapsed",
-                    )
-
-                c6, c7, c8 = st.columns(3)
-
-                with c6:
-
-                    label(
-                        "ऑब्जर्वेशन",
-                        "Observation Details",
-                    )
-
-                    new_observation = st.text_area(
-                        "Observation",
-                        value=clean(record.get("observation")),
-                        max_chars=100,
-                        height=100,
-                        label_visibility="collapsed",
-                    )
-
-                with c7:
-
-                    label(
-                        "किये गये कार्य का विवरण",
-                        "Description / Work Done",
-                    )
-
-                    new_description = st.text_area(
-                        "Description",
-                        value=clean(record.get("description")),
-                        max_chars=100,
-                        height=100,
-                        label_visibility="collapsed",
-                    )
-
-                with c8:
-
-                    label(
-                        "टिप्पणी",
-                        "Additional Remarks",
-                    )
-
-                    new_remarks = st.text_area(
-                        "Remarks",
-                        value=clean(record.get("remarks")),
-                        max_chars=100,
-                        height=100,
-                        label_visibility="collapsed",
-                    )
-
-                modify_reason = st.text_input(
-                    "Modification Reason",
-                    value="System UI Parameter Correction",
-                    max_chars=30,
-                )
-
-                update_clicked = st.form_submit_button(
-                    "Update Inspection Record",
-                    use_container_width=True,
-                )
-
-            if update_clicked:
-
-                ia_value = clean(record.get("ia_code"))
-                timestamp_value = record.get("timestamp")
-
-                if not ia_value or not timestamp_value:
-
-                    st.error(
-                        "The selected record is missing its assembly "
-                        "code or timestamp; it cannot be safely updated."
-                    )
-
-                else:
-
-                    update_payload = {
-                        "date": new_date.isoformat(),
-                        "c_w_ht": int(new_cw),
-                        "encum": int(new_encum),
-                        "run_gap": int(new_gap),
-                        "observation": new_observation.strip(),
-                        "description": new_description.strip(),
-                        "remarks": new_remarks.strip(),
-                        "modify_id": USER_ID,
-                        "modify_rea": modify_reason.strip(),
-                    }
-
-                    try:
-
-                        result = (
-                            supabase.table(TRANSACTION_TABLE)
-                            .update(update_payload)
-                            .eq("ia_code", ia_value)
-                            .eq("timestamp", timestamp_value)
-                            .execute()
-                        )
-
-                        if result.data:
-
-                            st.success(
-                                "Inspection record updated successfully."
-                            )
-
-                            st.rerun()
-
-                        else:
-
-                            st.warning(
-                                "No row was returned as updated. "
-                                "Check permissions and the timestamp match."
-                            )
-
-                    except Exception as exc:
-
-                        show_db_error(
-                            "Unable to update inspection record.",
-                            exc,
-                        )
-
-
-# ============================================================
-# FOOTER
-# ============================================================
-
-st.divider()
-
-st.caption(
-    "KRCL | Insulator Assembly Master & Transaction Management System"
-)
 
